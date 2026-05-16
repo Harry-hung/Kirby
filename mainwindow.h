@@ -21,12 +21,14 @@
 #include <QDebug>
 #include <QTimer>
 #include <QKeyEvent>
+
 #include "kirby.h"
 #include "exit_button.h"
 #include "platform.h"
 #include "kirby.h"
 #include "exit_button.h"
 #include "stages.h"
+#include "door.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -59,7 +61,7 @@ private:
     QTimer *gameTimer;
     Kirby *player;
     Buttons *exit_button;
-    Stages *stage;
+
 
     //scene 1,2,3
     const static int scene_start =0,

@@ -6,7 +6,7 @@ Buttons::Buttons(QString path, QGraphicsScene *scene)
     setZValue(50);
     setPos(1610-pixmap().width(),0);
     setOpacity(0.7);
-    scene -> addItem(this);
+    scene -> addItem(this);//dont delete this line!!
     setAcceptHoverEvents(true);
     setFlag(QGraphicsItem::ItemIgnoresTransformations);
 }

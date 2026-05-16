@@ -7,7 +7,9 @@
 class Stages : public GameObject
 {
 public:
-    Stages(QString img_path, QGraphicsScene *scene);
+    Stages(QString img_path, QGraphicsScene *scene
+           ,int x, int y);
+
 };
 
 #endif // STAGES_H

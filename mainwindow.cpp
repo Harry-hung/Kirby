@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-
+#include <iostream>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -10,8 +10,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     gameTimer = new QTimer(this);
     exit_button = new Buttons(":/Image/exitwindowbutton.png",Scene);
-    player = new Kirby(":/Image/Kirby_normal/kirby_stop_R.png",Scene);
-    stage = new Stages(":/Image/background/Stage1(1).png",Scene);
     setBG(":/Image/background/start.png");
     setView();
     setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
@@ -25,15 +23,15 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::gameUpdate(){
-
-    //player movement
-    if(player){
-        player ->updateMovement(4);
-        QPointF playerPos_onScene = player->mapToScene(0,0);
-        view->centerOn(playerPos_onScene.x()+50,540);
-        // advanced view->centerOn(player->x() + 200, view->sceneRect().center().y());
-    }else qDebug()<<"Failed to load Kirby";
-
+    if(game_scene != scene_start){
+        //player movement
+        if(player){
+            player ->updateMovement(4);
+            QPointF playerPos_onScene = player->mapToScene(0,0);
+            view->centerOn(playerPos_onScene.x()+50,540);
+            // advanced view->centerOn(player->x() + 200, view->sceneRect().center().y());
+        }//else qDebug()<<"Failed to load Kirby";
+    }
 
     //button
     if(exit_button){
@@ -111,7 +109,7 @@ void MainWindow::setView(){//set view
     setCentralWidget(view);
 }
 
-void MainWindow::setScene(){//set scene
+void MainWindow::setScene(){//set Start scene
     Scene = new QGraphicsScene(this);
     Scene->setSceneRect(0,0,1620,1080);
 }
@@ -149,6 +147,7 @@ void MainWindow::switchScene(){
         Scene -> clear();
         Scene ->setSceneRect(0,0,4860,1080);
         Item_Default();
+        loadTiledMap(":/scene_1.json");
         setBG(":/Image/background/Background.jpg");
         break;
     case scene_2:
@@ -163,16 +162,110 @@ void MainWindow::switchScene(){
 void MainWindow::Item_Default(){
     player =nullptr;
     exit_button = nullptr;
-
-    if(game_scene==scene_1||game_scene==scene_2){
-        if(!player)
-            player = new Kirby(":/Image/Kirby_normal/kirby_stop_R.png",Scene);
-    }else if(game_scene==scene_start){
-        player = nullptr;
-    }
     if(!exit_button)
         exit_button = new Buttons(":/Image/exitwindowbutton.png",Scene);
+
 }
+
+
+
+void MainWindow::loadTiledMap(QString json_path){
+    player = nullptr;
+    QFile file(json_path);
+    if(!file.open(QIODevice::ReadOnly)){
+        qDebug()<<"Fail to find json file";
+        return;
+    }
+    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    QJsonObject mapdata = doc.object();
+
+    int mapWidth = mapdata["width"].toInt();
+
+    //object GID
+    int stage1_1=10, stage1_2=10,stage1_3=10
+            ,floor=10,door=10;
+
+    //get GID of every tile
+    QJsonArray tilesets = mapdata["tilesets"].toArray();
+    for(int i=0;i<tilesets.size();i++){
+        QString tilename = tilesets[i].toObject()["source"].toString();
+        if(tilename == "Stage1(1).tsx")
+            stage1_1 = tilesets[i].toObject()["firstgid"].toInt();
+        if(tilename == "Stage1(2).tsx")
+            stage1_2 = tilesets[i].toObject()["firstgid"].toInt();
+        if(tilename == "Stage1(3).tsx")
+            stage1_3 = tilesets[i].toObject()["firstgid"].toInt();
+        if(tilename == "floor.tsx")
+            floor = tilesets[i].toObject()["firstgid"].toInt();
+        if(tilename == "door.tsx")
+            door = tilesets[i].toObject()["firstgid"].toInt();
+
+    }
+
+    QJsonArray layers = mapdata["layers"].toArray();
+    for(int i=0;i<layers.size();i++){
+        if(layers[i].toObject()["type"] == "tilelayer"){
+            QJsonArray data = layers[i].toObject()["data"].toArray();
+            for(int j=0;j<data.size();j++){
+                if(data[j]==0)
+                    continue;
+                else{
+                    int x = (j % mapWidth);
+                    int y = (j / mapWidth);
+                    if(data[j] == stage1_1){
+                        Stages* stage = new Stages(":/Image/background/Stage1(1).png",
+                                                   Scene, x, y);
+                        stage->setPos(x, y-stage->pixmap().height());
+                        Scene->addItem(stage);
+                    }
+                    if(data[j] ==stage1_2){
+                        QPixmap img(":/Image/background/Stage1(2).png");
+                        QPixmap scaled_img = img.scaled(img.size()*1.05,Qt::KeepAspectRatio);
+                        Stages* stage = new Stages(":/Image/background/Stage1(2).png",
+                                                   Scene, x, y);
+                        stage->setPos(x, y-stage->pixmap().height());
+                        stage->setPixmap(scaled_img);
+                        Scene->addItem(stage);
+                    }
+                    if(data[j] == stage1_3){
+                        Stages* stage = new Stages(":/Image/background/Stage1(3).png",
+                                            Scene, x, y);
+                        stage->setPos(x, y -(stage->pixmap().height()));
+                        Scene->addItem(stage);
+                    }
+                    if(data[j]== floor){
+                        std::cout<<"floor";
+                        Scene->addItem(new Platform(":/Image/item/floor.png",Scene,x,y));
+                    }
+                    if(data[j] == door){
+                        Door* portal = new Door(":/Image/item/door.png",Scene);
+                        portal->setPos(x,y-(portal->pixmap().height()));
+                        Scene->addItem(portal);
+                    }
+                }
+            }
+        }else if(layers[i].toObject()["type"] == "objectgroup"){
+            QJsonArray objects = layers[i].toObject()["objects"].toArray();
+            for(int j=0;j<objects.size();j++){
+                if(objects[j].toObject()["name"] == "PlayerSpawn"){
+                    if(!player){
+                        player = new Kirby(":/Image/Kirby_normal/kirby_stop_R.png",Scene);
+                        Scene ->addItem(player);
+                    }
+                    int x = objects[j].toObject()["x"].toInt();
+                    int y = objects[j].toObject()["y"].toInt();
+
+                    player->setPos(x,y);
+                }else if(objects[j].toObject()["name"] == "EnemySpawn"){
+
+                }
+            }
+
+        }
+    }
+
+}
+
 
 
 

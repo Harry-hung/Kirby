@@ -1,6 +1,7 @@
 #include "stages.h"
 
-Stages::Stages(QString path, QGraphicsScene *scene) : GameObject(path, scene)
+Stages::Stages(QString path, QGraphicsScene *scene,int x, int y) : GameObject(path, scene)
 {
-    setPos(0,1080-pixmap().height());
+    setPos(x,y);
+    setZValue(4);
 }
