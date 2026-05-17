@@ -4,6 +4,7 @@
 #include <QGraphicsPixmapItem>
 #include <QGraphicsScene>
 #include <QPainterPath>
+#include <QPainter>
 #include <QString>
 
 #include <QJsonDocument>
@@ -17,12 +18,11 @@ class GameObject : public QGraphicsPixmapItem
 {
 public:
     GameObject(QString path, QGraphicsScene *scene);
-    void setCollisionShape(QString json_path);
 
-    QPainterPath shape() const override;
+    void paint(QPainter* painter,const QStyleOptionGraphicsItem *option, QWidget *widget) override;
+
 private:
-    void jsonToPath(QString json_path);
-    QPainterPath m_customPath ;
+
 };
 
 #endif // GAMEOBJECT_H

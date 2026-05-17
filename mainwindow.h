@@ -51,6 +51,8 @@ public:
     void Item_Default();
     void loadTiledMap(QString json_path);
 
+    bool isPlayerGround();
+
 private slots:
     void gameUpdate();
 

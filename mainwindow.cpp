@@ -26,10 +26,11 @@ void MainWindow::gameUpdate(){
     if(game_scene != scene_start){
         //player movement
         if(player){
+
             player ->updateMovement(4);
             QPointF playerPos_onScene = player->mapToScene(0,0);
             view->centerOn(playerPos_onScene.x()+50,540);
-            // advanced view->centerOn(player->x() + 200, view->sceneRect().center().y());
+
         }//else qDebug()<<"Failed to load Kirby";
     }
 
@@ -115,6 +116,7 @@ void MainWindow::setScene(){//set Start scene
 }
 
 
+
 void MainWindow::keyPressEvent(QKeyEvent *event){
     if(player)
         player -> handlePressEvent(event);
@@ -148,6 +150,7 @@ void MainWindow::switchScene(){
         Scene ->setSceneRect(0,0,4860,1080);
         Item_Default();
         loadTiledMap(":/scene_1.json");
+        player->setY(player->y()-60);
         setBG(":/Image/background/Background.jpg");
         break;
     case scene_2:
@@ -214,16 +217,16 @@ void MainWindow::loadTiledMap(QString json_path){
                     int y = (j / mapWidth);
                     if(data[j] == stage1_1){
                         Stages* stage = new Stages(":/Image/background/Stage1(1).png",
-                                                   Scene, x, y);
-                        stage->setPos(x, y-stage->pixmap().height());
+                                                   Scene, 0, y);
+                        stage->setPos(0, y-stage->pixmap().height());
                         Scene->addItem(stage);
                     }
                     if(data[j] ==stage1_2){
                         QPixmap img(":/Image/background/Stage1(2).png");
-                        QPixmap scaled_img = img.scaled(img.size()*1.05,Qt::KeepAspectRatio);
+                        QPixmap scaled_img = img.scaled(img.width()+100,img.height()+100,Qt::IgnoreAspectRatio);
                         Stages* stage = new Stages(":/Image/background/Stage1(2).png",
                                                    Scene, x, y);
-                        stage->setPos(x, y-stage->pixmap().height());
+                        stage->setPos(x, y-stage->pixmap().height()-40);
                         stage->setPixmap(scaled_img);
                         Scene->addItem(stage);
                     }
@@ -256,6 +259,7 @@ void MainWindow::loadTiledMap(QString json_path){
                     int y = objects[j].toObject()["y"].toInt();
 
                     player->setPos(x,y);
+
                 }else if(objects[j].toObject()["name"] == "EnemySpawn"){
 
                 }
