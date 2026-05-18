@@ -218,7 +218,7 @@ void MainWindow::loadTiledMap(QString json_path){
                     if(data[j] == stage1_1){
                         Stages* stage = new Stages(":/Image/background/Stage1(1).png",
                                                    Scene, 0, y);
-                        stage->setPos(0, y-stage->pixmap().height());
+                        stage->setPos(0, y-stage->pixmap().height()+60);
                         Scene->addItem(stage);
                     }
                     if(data[j] ==stage1_2){
@@ -226,14 +226,14 @@ void MainWindow::loadTiledMap(QString json_path){
                         QPixmap scaled_img = img.scaled(img.width()+100,img.height()+100,Qt::IgnoreAspectRatio);
                         Stages* stage = new Stages(":/Image/background/Stage1(2).png",
                                                    Scene, x, y);
-                        stage->setPos(x, y-stage->pixmap().height()-40);
+                        stage->setPos(x, y-stage->pixmap().height()+60);
                         stage->setPixmap(scaled_img);
                         Scene->addItem(stage);
                     }
                     if(data[j] == stage1_3){
                         Stages* stage = new Stages(":/Image/background/Stage1(3).png",
                                             Scene, x, y);
-                        stage->setPos(x, y -(stage->pixmap().height()));
+                        stage->setPos(x, y -(stage->pixmap().height())+60);
                         Scene->addItem(stage);
                     }
                     if(data[j]== floor){
@@ -242,7 +242,7 @@ void MainWindow::loadTiledMap(QString json_path){
                     }
                     if(data[j] == door){
                         Door* portal = new Door(":/Image/item/door.png",Scene);
-                        portal->setPos(x,y-(portal->pixmap().height()));
+                        portal->setPos(x,y-(portal->pixmap().height())+120);
                         Scene->addItem(portal);
                     }
                 }

@@ -4,7 +4,7 @@ Enemy::Enemy(QString img_path, QGraphicsScene* scene
              ,int spawnPoint_x, int spawnPoint_y, int level):GameObject(img_path,scene)
 {
     spaw_x = spawnPoint_x; spaw_y = spawnPoint_y;
-
+    setData(0,"Enemy");
     //random enemy type, just for fun
     if(level == 1){
         type = rand()%2;

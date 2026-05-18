@@ -4,4 +4,5 @@ Platform::Platform(QString path, QGraphicsScene *scene, int x, int y):GameObject
 {
     setPos(x,y);
     setZValue(2);
+    setData(0,"Platform");
 }
