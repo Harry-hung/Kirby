@@ -26,12 +26,13 @@ void MainWindow::gameUpdate(){
     if(game_scene != scene_start){
         //player movement
         if(player){
-
             player ->updateMovement(4);
+            if(player->isNextScene()){game_scene = scene_2; switchScene();}
+            if(player->isNextScene()){game_scene = scene_clear; switchScene();}
             QPointF playerPos_onScene = player->mapToScene(0,0);
             view->centerOn(playerPos_onScene.x()+50,540);
 
-        }//else qDebug()<<"Failed to load Kirby";
+        }else qDebug()<<"Failed to load Kirby";
     }
 
     //button
@@ -39,6 +40,10 @@ void MainWindow::gameUpdate(){
         exit_button ->update();
         exit_button ->setPos(view->mapToScene(1610,0).x() - exit_button->pixmap().width(),0);
     }
+
+    //Enemy
+    for(Enemy* enemy:enemys)
+        enemy->update();
 }
 
 //set background
@@ -151,13 +156,20 @@ void MainWindow::switchScene(){
         Item_Default();
         loadTiledMap(":/scene_1.json");
         player->setY(player->y()-60);
+       player->setX(4800);
         setBG(":/Image/background/Background.jpg");
         break;
     case scene_2:
         Scene->clear();
         Scene->setSceneRect(0,0,8100,1080);
         Item_Default();
+        loadTiledMap(":/scene_2.json");
+
         setBG(":/Image/background/Background.jpg");
+        break;
+    case scene_clear:
+        break;
+    case scene_over:
         break;
     }
 }
@@ -165,6 +177,7 @@ void MainWindow::switchScene(){
 void MainWindow::Item_Default(){
     player =nullptr;
     exit_button = nullptr;
+    enemys.clear();
     if(!exit_button)
         exit_button = new Buttons(":/Image/exitwindowbutton.png",Scene);
 
@@ -176,7 +189,7 @@ void MainWindow::loadTiledMap(QString json_path){
     player = nullptr;
     QFile file(json_path);
     if(!file.open(QIODevice::ReadOnly)){
-        qDebug()<<"Fail to find json file";
+        qDebug()<<"Fail to find map json file";
         return;
     }
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
@@ -186,11 +199,12 @@ void MainWindow::loadTiledMap(QString json_path){
 
     //object GID
     int stage1_1=10, stage1_2=10,stage1_3=10
-            ,floor=10,door=10;
+            ,stage2_2=-1, stage2_1=-1,floor=10,goal_door=-1,door=10,brick=-1;
 
     //get GID of every tile
     QJsonArray tilesets = mapdata["tilesets"].toArray();
     for(int i=0;i<tilesets.size();i++){
+        std::cout<<"stage";
         QString tilename = tilesets[i].toObject()["source"].toString();
         if(tilename == "Stage1(1).tsx")
             stage1_1 = tilesets[i].toObject()["firstgid"].toInt();
@@ -198,10 +212,16 @@ void MainWindow::loadTiledMap(QString json_path){
             stage1_2 = tilesets[i].toObject()["firstgid"].toInt();
         if(tilename == "Stage1(3).tsx")
             stage1_3 = tilesets[i].toObject()["firstgid"].toInt();
+        if(tilename == "Stage2(1).tsx")
+            stage2_1 = tilesets[i].toObject()["firstgid"].toInt();
+        if(tilename == "Stage2(2).tsx")
+            stage2_2 = tilesets[i].toObject()["firstgid"].toInt();
         if(tilename == "floor.tsx")
             floor = tilesets[i].toObject()["firstgid"].toInt();
         if(tilename == "door.tsx")
             door = tilesets[i].toObject()["firstgid"].toInt();
+        if(tilename == "brick.tsx")
+            brick = tilesets[i].toObject()["firstgid"].toInt();
 
     }
 
@@ -215,10 +235,12 @@ void MainWindow::loadTiledMap(QString json_path){
                 else{
                     int x = (j % mapWidth);
                     int y = (j / mapWidth);
+                    int adjustheight=50;
                     if(data[j] == stage1_1){
                         Stages* stage = new Stages(":/Image/background/Stage1(1).png",
                                                    Scene, 0, y);
-                        stage->setPos(0, y-stage->pixmap().height()+60);
+                        if(game_scene==scene_1)
+                            stage->setPos(0, y-stage->pixmap().height()+60);
                         Scene->addItem(stage);
                     }
                     if(data[j] ==stage1_2){
@@ -226,24 +248,50 @@ void MainWindow::loadTiledMap(QString json_path){
                         QPixmap scaled_img = img.scaled(img.width()+100,img.height()+100,Qt::IgnoreAspectRatio);
                         Stages* stage = new Stages(":/Image/background/Stage1(2).png",
                                                    Scene, x, y);
-                        stage->setPos(x, y-stage->pixmap().height()+60);
+                        if(game_scene==scene_1)
+                            stage->setPos(x, y-stage->pixmap().height()+60);
                         stage->setPixmap(scaled_img);
                         Scene->addItem(stage);
                     }
                     if(data[j] == stage1_3){
                         Stages* stage = new Stages(":/Image/background/Stage1(3).png",
                                             Scene, x, y);
-                        stage->setPos(x, y -(stage->pixmap().height())+60);
+                        if(game_scene==scene_1)
+                            stage->setPos(x, y -(stage->pixmap().height())+60);
+                        else if(game_scene==scene_2)
+                            stage->setPos(x,y-stage->pixmap().height()+adjustheight);
+                        Scene->addItem(stage);
+                    }
+                    if(data[j] == stage2_1){
+                        Stages* stage = new Stages(":/Image/background/Stage2(1).png",
+                                            Scene, x, y);
+                        stage->setPos(x, y -(stage->pixmap().height())+adjustheight);
+                        Scene->addItem(stage);
+                    }
+                    if(data[j] == stage2_2){
+                        Stages* stage = new Stages(":/Image/background/Stage2(2).png",
+                                            Scene, x, y);
+                        stage->setPos(x, y -(stage->pixmap().height())+adjustheight);
                         Scene->addItem(stage);
                     }
                     if(data[j]== floor){
-                        std::cout<<"floor";
+                       // std::cout<<"floor";
                         Scene->addItem(new Platform(":/Image/item/floor.png",Scene,x,y));
                     }
                     if(data[j] == door){
                         Door* portal = new Door(":/Image/item/door.png",Scene);
-                        portal->setPos(x,y-(portal->pixmap().height())+120);
+                        portal->setPos(x,y-(portal->pixmap().height()));
                         Scene->addItem(portal);
+                    }
+                    if(data[j]==goal_door){
+                        Door* portal = new Door(":/Image/item/goal_door.png",Scene);
+                        portal->setPos(x,y-(portal->pixmap().height()));
+                        Scene->addItem(portal);
+                    }
+                    if(data[j] == brick){
+                        Stages* Brick = new Stages(":/Image/item/brick.png",Scene, x, y);
+                        Brick->setPos(x,y-(Brick->pixmap().height())+adjustheight);
+                        Scene->addItem(Brick);
                     }
                 }
             }
@@ -255,13 +303,19 @@ void MainWindow::loadTiledMap(QString json_path){
                         player = new Kirby(":/Image/Kirby_normal/kirby_stop_R.png",Scene);
                         Scene ->addItem(player);
                     }
-                    int x = objects[j].toObject()["x"].toInt();
-                    int y = objects[j].toObject()["y"].toInt();
+                    double x = objects[j].toObject()["x"].toDouble();
+                    double y = objects[j].toObject()["y"].toDouble();
 
                     player->setPos(x,y);
-
+                    std::cout<<"map: "<<x<<' '<<y<<" Player: "<<player->x()<<' '<<player->y();
                 }else if(objects[j].toObject()["name"] == "EnemySpawn"){
 
+                   double x= objects[j].toObject()["x"].toDouble();
+                   double y= objects[j].toObject()["y"].toDouble();
+                   Enemy* enemy = new Enemy(":/Image/Sparky/Sparky_attack_1.png",Scene, x, y, game_scene);
+                   enemys.append(enemy);
+                   Scene->addItem(enemy);
+                   enemy->setPos(x,y);
                 }
             }
 
