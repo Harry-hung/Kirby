@@ -23,14 +23,18 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::gameUpdate(){
-    if(game_scene != scene_start){
+    if(game_scene != scene_start&&game_scene!=scene_clear){
         //player movement
         if(player){
             player ->updateMovement(4);
-            if(player->isNextScene()){game_scene = scene_2; switchScene();}
-            if(player->isNextScene()){game_scene = scene_clear; switchScene();}
             QPointF playerPos_onScene = player->mapToScene(0,0);
             view->centerOn(playerPos_onScene.x()+50,540);
+            if(player->isNextScene()){
+                if(game_scene==scene_1)game_scene = scene_2;
+                else if(game_scene==scene_2)game_scene = scene_clear;
+
+                switchScene();
+            }
 
         }else qDebug()<<"Failed to load Kirby";
     }
@@ -42,6 +46,7 @@ void MainWindow::gameUpdate(){
     }
 
     //Enemy
+    if(!enemys.isEmpty())
     for(Enemy* enemy:enemys)
         enemy->update();
 }
@@ -57,7 +62,10 @@ void MainWindow::setBG(QString path){
             scaledBg1 = Bg1.scaled(4860,1080,Qt::IgnoreAspectRatio);
         else if(game_scene==scene_2)
             scaledBg1 = Bg1.scaled(8100,1080,Qt::IgnoreAspectRatio);
-
+        else if(game_scene==scene_clear)
+            scaledBg1 = Bg1.scaled(1620,1080,Qt::KeepAspectRatio);
+        else if(game_scene==scene_over)
+            scaledBg1 = Bg1.scaled(1620,1080,Qt::KeepAspectRatio);
         QGraphicsPixmapItem *bg1Item = new QGraphicsPixmapItem(scaledBg1);
         bg1Item ->setPos(0,0);
         bg1Item ->setZValue(-1);
@@ -156,7 +164,7 @@ void MainWindow::switchScene(){
         Item_Default();
         loadTiledMap(":/scene_1.json");
         player->setY(player->y()-60);
-       player->setX(4800);
+      //player->setX(4800);
         setBG(":/Image/background/Background.jpg");
         break;
     case scene_2:
@@ -164,12 +172,19 @@ void MainWindow::switchScene(){
         Scene->setSceneRect(0,0,8100,1080);
         Item_Default();
         loadTiledMap(":/scene_2.json");
-
+       // player->setX(8100);
         setBG(":/Image/background/Background.jpg");
         break;
     case scene_clear:
+        std::cout<<"pp";
+        Scene->clear();
+        Scene->setSceneRect(0,0,1620,1080);
+        Item_Default();
+        setBG(":/Image/background/Clear.png");
         break;
     case scene_over:
+        Scene->setSceneRect(0,0,1620,1080);
+        setBG(":/Image/background/game_over_continue.png");
         break;
     }
 }
@@ -204,7 +219,7 @@ void MainWindow::loadTiledMap(QString json_path){
     //get GID of every tile
     QJsonArray tilesets = mapdata["tilesets"].toArray();
     for(int i=0;i<tilesets.size();i++){
-        std::cout<<"stage";
+
         QString tilename = tilesets[i].toObject()["source"].toString();
         if(tilename == "Stage1(1).tsx")
             stage1_1 = tilesets[i].toObject()["firstgid"].toInt();
@@ -220,6 +235,8 @@ void MainWindow::loadTiledMap(QString json_path){
             floor = tilesets[i].toObject()["firstgid"].toInt();
         if(tilename == "door.tsx")
             door = tilesets[i].toObject()["firstgid"].toInt();
+        if(tilename == "goal_door.tsx")
+            goal_door = tilesets[i].toObject()["firstgid"].toInt();
         if(tilename == "brick.tsx")
             brick = tilesets[i].toObject()["firstgid"].toInt();
 
@@ -299,20 +316,24 @@ void MainWindow::loadTiledMap(QString json_path){
             QJsonArray objects = layers[i].toObject()["objects"].toArray();
             for(int j=0;j<objects.size();j++){
                 if(objects[j].toObject()["name"] == "PlayerSpawn"){
-                    if(!player){
-                        player = new Kirby(":/Image/Kirby_normal/kirby_stop_R.png",Scene);
-                        Scene ->addItem(player);
-                    }
+
                     double x = objects[j].toObject()["x"].toDouble();
                     double y = objects[j].toObject()["y"].toDouble();
-
+                    if(!player){
+                        player = new Kirby(":/Image/Kirby_normal/kirby_stop_R.png",Scene, x, y);
+                        Scene ->addItem(player);
+                    }
+//std::cout<<"Player: "<<x<<' '<<y;
                     player->setPos(x,y);
-                    std::cout<<"map: "<<x<<' '<<y<<" Player: "<<player->x()<<' '<<player->y();
+                    player->y_pre_frame=static_cast<int>(y);
                 }else if(objects[j].toObject()["name"] == "EnemySpawn"){
 
                    double x= objects[j].toObject()["x"].toDouble();
                    double y= objects[j].toObject()["y"].toDouble();
-                   Enemy* enemy = new Enemy(":/Image/Sparky/Sparky_attack_1.png",Scene, x, y, game_scene);
+                   Enemy* enemy =nullptr;
+                   if(objects[j].toObject()["id"] =="12"||objects[j].toObject()["name"] =="5")
+                       enemy = new Enemy(":/Image/Sparky/Sparky_attack_1.png",Scene, x, y, game_scene,0);
+                   else enemy = new Enemy(":/Image/Sparky/Sparky_attack_1.png",Scene, x, y, game_scene,0);
                    enemys.append(enemy);
                    Scene->addItem(enemy);
                    enemy->setPos(x,y);

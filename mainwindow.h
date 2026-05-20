@@ -23,6 +23,7 @@
 #include <QKeyEvent>
 
 #include "kirby.h"
+#include "enemy.h"
 #include "exit_button.h"
 #include "platform.h"
 #include "kirby.h"
@@ -63,7 +64,7 @@ private:
     QTimer *gameTimer;
     Kirby *player;
     Buttons *exit_button;
-
+    QList<Enemy*> enemys;
 
     //scene 1,2,3
     const static int scene_start =0,

@@ -1,13 +1,13 @@
 #include "kirby.h"
 #include<iostream>
-Kirby::Kirby(QString path, QGraphicsScene *Scene):GameObject(path, Scene)
+Kirby::Kirby(QString path, QGraphicsScene *Scene,double spw_x, double spw_y):GameObject(path, Scene)
 {
     setZValue(1);
     state =state_normal;
     move = move_ground;
     facing=right;
-    Kirby::scene = Scene;
-
+    scene = Scene;
+    spaw_x=spw_x; spaw_y=spw_y;
 }
 
 void Kirby::updateMovement(int speed){
@@ -22,7 +22,7 @@ void Kirby::updateMovement(int speed){
 
     if(isDown_keyPressed&&!(move==move_flying)&&!(move==move_jump)) moveDown();
     else{
-        if(isLeft_keyPressed && isRight_keyPressed&&isGrounded) moveStop();
+        if(isLeft_keyPressed && isRight_keyPressed) moveStop();
         else{
             if(isLeft_keyPressed){ moveLeft(speed); Right_frames = 0;}
             else if(isRight_keyPressed){ moveRight(speed); Left_frames = 0;}
@@ -44,14 +44,13 @@ void Kirby::updateMovement(int speed){
                 vy = jump_speed;
                 isGrounded=0;
                 Uptime=1;
-
             }else if(Uptime==0){
                 move=move_flying;
                 vy = flying_speed;
                 Uptime=1;
             }
         }else Uptime=0;
-        if(move == move_flying){
+        if(move == move_flying||state==state_air){
             vy+=0.5;
             if(vy>2.5) vy=2.5;
 
@@ -99,7 +98,7 @@ void Kirby::moveLeft(int speed){
     }
 
     setPos(x() - speed, y());
-    if(state == state_normal && move == move_ground){
+    if(move == move_ground && state==state_normal){
         if(Left_frames <image_frame){
             setPixmap(QPixmap(":/Image/Kirby_normal/kirby_run_1_L.png"));
             Left_frames++;
@@ -110,16 +109,14 @@ void Kirby::moveLeft(int speed){
             setPixmap(QPixmap(":/Image/Kirby_normal/kirby_run_3_L.png"));
             Left_frames++;
         } else Left_frames = 0;
-    }else if(state==state_air&& move == move_ground){
-        if(move==move_ground){
-            if(Right_frames < image_frame){
+    }else if(state==state_air && move==move_ground){
+            if(Left_frames < image_frame){
                 setPixmap(QPixmap(":/Image/Kirby_normal/kirby_fly_1_L.png"));
-                Right_frames++;
-            }else if(Right_frames < image_frame *2){
+                Left_frames++;
+            }else if(Left_frames < image_frame *2){
                 setPixmap(QPixmap(":/Image/Kirby_normal/kirby_fly_2_L.png"));
-                Right_frames++;
-            }else Right_frames = 0;
-         }
+                Left_frames++;
+            }else Left_frames = 0;
         }
 }
 
@@ -129,8 +126,7 @@ void Kirby::moveRight(int speed){
         moveStop();
         return;
     }
-    if(state_normal){
-        if(move == move_ground){
+    if(state==state_normal&&move == move_ground){
             if(Right_frames < image_frame){
                 setPixmap(QPixmap(":/Image/Kirby_normal/kirby_run_1_R.png"));
                 Right_frames++;
@@ -141,8 +137,8 @@ void Kirby::moveRight(int speed){
                 setPixmap(QPixmap(":/Image/Kirby_normal/kirby_run_3_R.png"));
                 Right_frames++;
             }else Right_frames = 0;
-         }
-    }else if(state==state_air){
+
+    }else if(state==state_air&&move == move_ground){
         if(move==move_ground){
             if(Right_frames < image_frame){
                 setPixmap(QPixmap(":/Image/Kirby_normal/kirby_fly_1_R.png"));
@@ -169,7 +165,6 @@ void Kirby::moveUp(){
                 Up_frames++;
                 if(Up_frames==2*image_frame)
                     Up_frames=0;
-
             }
         }else if(facing==left){
             if(Up_frames<image_frame){
@@ -220,6 +215,7 @@ void Kirby::moveDown(){
         }
 
 }
+
 void Kirby::moveStop(){
 
     setScale(1);
@@ -238,8 +234,22 @@ bool Kirby::isYWeird(){
     return maybe;
 }
 
-void Kirby::Animation(){
-
+void Kirby::moveAttack(){
+    if(state==state_air){
+        switch (facing){
+        case left:
+            setPixmap(QPixmap(":/Image/Kirby_normal/kirby_attack_L.png"));
+            if(Attk_frames<image_frame){
+                Attk_frames++;
+            }else if(Attk_frames<image_frame*2){
+                Attk_frames++;
+            }else Attk_frames=0;
+                break;
+        case right:
+            if(Attk_frames<image_frame) ;
+        break;
+        }
+    }
 }
 
 void Kirby::handlePressEvent(QKeyEvent *event){
