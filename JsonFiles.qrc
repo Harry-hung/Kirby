@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>door.json</file>
+        <file>scene_1.json</file>
+        <file>scene_2.json</file>
+    </qresource>
+</RCC>
