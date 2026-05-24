@@ -325,19 +325,30 @@ bool Kirby::isCollision(){
         if(item->data(0)=="Solid"){
             return true;
         }
+
+        //Platform can jump through if player is under it
         if(item->data(0)=="Platform"&&!isDown_keyPressed){
-            if(item->y() > y()+pixmap().height()-50)
+            if(item->y() > y()+pixmap().height()-35)
                 return true;
         }
     }
     return false;
 }
 
+
+bool Kirby::isCollideEnemy(){
+    QList<QGraphicsItem*> enemys= scene->collidingItems(this);
+    for(QGraphicsItem* item : enemys){
+        if(item->data(0)=="Solid"){
+            return true;
+        }
+}
+
 bool Kirby::isDoor(){
     QList<QGraphicsItem*> items_hit = scene-> collidingItems(this);
     for(QGraphicsItem* item : items_hit)
         if(item->data(0)=="Door")
-            return true;
+            return 1;
     return 0;
 
 }

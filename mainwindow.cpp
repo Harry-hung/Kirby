@@ -117,10 +117,21 @@ void MainWindow::setBG(QString path){
 void MainWindow::setView(){//set view
     view = new QGraphicsView(Scene, this);
     view->setFocusPolicy(Qt::NoFocus);
+    view->setDragMode(QGraphicsView::NoDrag);
     view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view->setFixedSize(1620,1080);
+    view->viewport()->installEventFilter(this);
     setCentralWidget(view);
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    // 攔截滑鼠滾輪事件，避免畫面上下左右滑動
+    if (event->type() == QEvent::Wheel) {
+        return true; // 直接攔截，不讓 View 處理捲動
+    }
+    return QMainWindow::eventFilter(obj, event);
 }
 
 void MainWindow::setScene(){//set Start scene
@@ -164,15 +175,16 @@ void MainWindow::switchScene(){
         Item_Default();
         loadTiledMap(":/scene_1.json");
         player->setY(player->y()-60);
-      //player->setX(4800);
+      player->setX(4800);
         setBG(":/Image/background/Background.jpg");
         break;
     case scene_2:
+        srand(time(NULL));
         Scene->clear();
         Scene->setSceneRect(0,0,8100,1080);
         Item_Default();
         loadTiledMap(":/scene_2.json");
-       // player->setX(8100);
+       player->setX(7800);
         setBG(":/Image/background/Background.jpg");
         break;
     case scene_clear:
@@ -331,9 +343,10 @@ void MainWindow::loadTiledMap(QString json_path){
                    double x= objects[j].toObject()["x"].toDouble();
                    double y= objects[j].toObject()["y"].toDouble();
                    Enemy* enemy =nullptr;
-                   if(objects[j].toObject()["id"] =="12"||objects[j].toObject()["name"] =="5")
-                       enemy = new Enemy(":/Image/Sparky/Sparky_attack_1.png",Scene, x, y, game_scene,0);
-                   else enemy = new Enemy(":/Image/Sparky/Sparky_attack_1.png",Scene, x, y, game_scene,0);
+                   int id=objects[j].toObject()["id"].toInt();
+                   if( id==12||id ==5||id ==10)
+                       enemy = new Enemy(":/Image/Sparky/Sparky_attack_1.png",Scene, x, y, game_scene,true,objects[j].toObject()["id"].toInt());
+                   else enemy = new Enemy(":/Image/Sparky/Sparky_attack_1.png",Scene, x, y, game_scene,false,objects[j].toObject()["id"].toInt());
                    enemys.append(enemy);
                    Scene->addItem(enemy);
                    enemy->setPos(x,y);

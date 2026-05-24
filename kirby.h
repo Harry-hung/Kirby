@@ -22,6 +22,7 @@ private:
 
     double spaw_x,spaw_y;
     bool isCollision();
+    bool isCollideEnemy();
     bool isDoor();
     bool isEnemy();
     int hp=0,life=0;

@@ -52,6 +52,7 @@ public:
     void Item_Default();
     void loadTiledMap(QString json_path);
 
+    bool eventFilter(QObject *obj, QEvent *event) override;
     bool isPlayerGround();
 
 private slots:
@@ -65,6 +66,7 @@ private:
     Kirby *player;
     Buttons *exit_button;
     QList<Enemy*> enemys;
+
 
     //scene 1,2,3
     const static int scene_start =0,
