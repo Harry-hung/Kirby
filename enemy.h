@@ -51,6 +51,7 @@ private:
     bool isBlocked();
 
     //level
+    int level=0;
     const int scene_1 = 1, scene_2 = 2;
     QGraphicsScene* scene=nullptr;
 

@@ -13,15 +13,30 @@ Kirby::Kirby(QString path, QGraphicsScene *Scene,double spw_x, double spw_y):Gam
 void Kirby::updateMovement(int speed){
     temp_x = x();
 
+    if(isEnemy()&&move!=move_attacking&&hurt_frames==120)
+    {
+        CollideEnemy();
+        move=move_ground;
+        hp--;
+        state=state_normal;
+        hurt_frames=0;
+    }
     if(isYWeird()){
-       setY(y_pre_frame);
-       return;
-     }
-     y_pre_frame=y();
-
+        setY(y_pre_frame);
+        return;
+    }
+    y_pre_frame=y();
+    if(move==move_attacking)
+    {
+        moveAttack();
+        return;
+    }
+    if(hurt_frames<120)
+        moveHurt();
 
     if(isDown_keyPressed&&!(move==move_flying)&&!(move==move_jump)) moveDown();
-    else{
+    else
+    {
         if(isLeft_keyPressed && isRight_keyPressed) moveStop();
         else{
             if(isLeft_keyPressed){ moveLeft(speed); Right_frames = 0;}
@@ -33,10 +48,7 @@ void Kirby::updateMovement(int speed){
         if(Down_time >0){
              Down_time = 0;
             }
-        if(isUp_keyPressed){
-            if(isDoor()) {
-                ////
-            }
+        if(isUp_keyPressed&&move){
             moveUp();
             if(isGrounded&&state!=state_air){
                 Up_frames=0;
@@ -66,24 +78,26 @@ void Kirby::updateMovement(int speed){
 
     }
 
-        handleCollisionY();
+    handleCollisionY();
 
-        if(!(isRight_keyPressed| isLeft_keyPressed|isUp_keyPressed|isDown_keyPressed)&&isGrounded)
+    if(!(isRight_keyPressed| isLeft_keyPressed|isUp_keyPressed|isDown_keyPressed)&&isGrounded)
+    {
+        temp_x =x(); temp_y = y();
+        for(int i=0;i<=10;i++)
         {
-            temp_x =x(); temp_y = y();
-            for(int i=0;i<=10;i++){
-                setY(temp_y-i);
-                for(int j=0;j<=10;j++){
-                    setX(temp_x-j);
-                    if(!isCollision())
-                        break;
-                            }
+            setY(temp_y-i);
+            for(int j=0;j<=10;j++)
+            {
+                setX(temp_x-j);
                 if(!isCollision())
                     break;
             }
-            setPos(temp_x,temp_y);
-            moveStop();
+            if(!isCollision())
+                break;
         }
+        setPos(temp_x,temp_y);
+        moveStop();
+    }
 }
 
 
@@ -227,6 +241,16 @@ void Kirby::moveStop(){
     }
 }
 
+void Kirby::moveHurt()
+{
+    if ((hurt_frames / 4) % 2 == 0) {
+        setOpacity(0.3f);
+    } else {
+        setOpacity(1.0f);
+    }
+    hurt_frames++;
+}
+
 bool Kirby::isYWeird(){
     bool maybe=0;
     if(y()-y_pre_frame>30 || y()-y_pre_frame<-30)
@@ -256,6 +280,7 @@ void Kirby::handlePressEvent(QKeyEvent *event){
     if (event->isAutoRepeat()) {
             return;
         }
+    if(event->key() == Qt::Key_X) isXPressed =1;
     if(event->key() == Qt::Key_Up) isUp_keyPressed =1;
     if(event->key() == Qt::Key_Down) isDown_keyPressed =1;
     if(event->key() == Qt::Key_Right) isRight_keyPressed =1;
@@ -267,7 +292,7 @@ void Kirby::handleReleaseEvent(QKeyEvent *event){
     if (event->isAutoRepeat()) {
         return;
     }
-
+    if(event->key() == Qt::Key_X) isXPressed =0;
     if(event->key() == Qt::Key_Up) isUp_keyPressed =0;
     if(event->key() == Qt::Key_Down) isDown_keyPressed =0;
     if(event->key() == Qt::Key_Right) isRight_keyPressed =0;
@@ -336,12 +361,19 @@ bool Kirby::isCollision(){
 }
 
 
-bool Kirby::isCollideEnemy(){
+bool Kirby::CollideEnemy(){
     QList<QGraphicsItem*> enemys= scene->collidingItems(this);
     for(QGraphicsItem* item : enemys){
-        if(item->data(0)=="Solid"){
+        if(item->data(0)=="Enemy"){
+            if(item->x() > x())
+            {
+                setX(x()-20);
+            }else
+                setX(x()+20);
             return true;
         }
+    }
+    return false;
 }
 
 bool Kirby::isDoor(){

@@ -149,9 +149,6 @@ void MainWindow::keyPressEvent(QKeyEvent *event){
     if(game_scene == scene_start && event->key() == Qt::Key_Return){
         game_scene = scene_1;
         switchScene();
-    }else if(game_scene == scene_1 && event->key() == Qt::Key_Return){
-        game_scene = scene_2;
-        switchScene();
     }
     return;
 }
@@ -175,7 +172,7 @@ void MainWindow::switchScene(){
         Item_Default();
         loadTiledMap(":/scene_1.json");
         player->setY(player->y()-60);
-      player->setX(4800);
+     //player->setX(4800);
         setBG(":/Image/background/Background.jpg");
         break;
     case scene_2:
@@ -184,11 +181,11 @@ void MainWindow::switchScene(){
         Scene->setSceneRect(0,0,8100,1080);
         Item_Default();
         loadTiledMap(":/scene_2.json");
-       player->setX(7800);
+       player->setX(5000);
         setBG(":/Image/background/Background.jpg");
         break;
     case scene_clear:
-        std::cout<<"pp";
+       // std::cout<<"pp";
         Scene->clear();
         Scene->setSceneRect(0,0,1620,1080);
         Item_Default();
@@ -309,12 +306,12 @@ void MainWindow::loadTiledMap(QString json_path){
                     }
                     if(data[j] == door){
                         Door* portal = new Door(":/Image/item/door.png",Scene);
-                        portal->setPos(x,y-(portal->pixmap().height()));
+                        portal->setPos(x,y-(portal->pixmap().height())+120);
                         Scene->addItem(portal);
                     }
                     if(data[j]==goal_door){
                         Door* portal = new Door(":/Image/item/goal_door.png",Scene);
-                        portal->setPos(x,y-(portal->pixmap().height()));
+                        portal->setPos(x,y-(portal->pixmap().height())+50);
                         Scene->addItem(portal);
                     }
                     if(data[j] == brick){
@@ -335,8 +332,9 @@ void MainWindow::loadTiledMap(QString json_path){
                         player = new Kirby(":/Image/Kirby_normal/kirby_stop_R.png",Scene, x, y);
                         Scene ->addItem(player);
                     }
-//std::cout<<"Player: "<<x<<' '<<y;
+                    y=y-37;
                     player->setPos(x,y);
+//std::cout<<"Player: "<<player->x()<<' '<<player->y();
                     player->y_pre_frame=static_cast<int>(y);
                 }else if(objects[j].toObject()["name"] == "EnemySpawn"){
 

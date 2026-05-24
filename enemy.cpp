@@ -3,7 +3,7 @@
 #include <ctime>
 
 Enemy::Enemy(QString img_path, QGraphicsScene* main_scene
-             ,int spawnPoint_x, int spawnPoint_y, int level,bool isGordo,int scene_id
+             ,int spawnPoint_x, int spawnPoint_y, int glevel,bool isGordo,int scene_id
 
              ):GameObject(img_path,main_scene)
 {
@@ -16,11 +16,11 @@ Enemy::Enemy(QString img_path, QGraphicsScene* main_scene
     turning_x=x();
 
     //random enemy type, just for fun
-
-    if(level == 1){
+    level=glevel;
+    if(glevel == 1){
         type = rand()%2;
 //std::cout<<"Type: "<<type<<std::endl;
-    }else if(level == 2){
+    }else if(glevel == 2){
         //make sure every type of enemy exist
         if(!isGordo){
         bool is0=0, is1=0,is2=0, is3=0;
@@ -54,7 +54,7 @@ Enemy::~Enemy(){
 };
 void Enemy::update(){
     if(type==Sparky) spark_movement();
-    else if(id==12||id==10){
+    else if((id==12||id==10)&&level==scene_2){
         updownMove();
     }
     else {
@@ -185,8 +185,16 @@ void Enemy::spark_movement(){
         if(facing==left)
             setX(x()-jump_x_spd);
     }
-    if(isWallBlocked()){
-        setX(temp_x); facing=(facing==right)?left:right;
+    if(id==4){
+        if(facing==right){
+            if(x()>6000){
+                facing = left;setX(x()-10); turning_x=x();
+            }
+        }else if(facing==left){
+            if(x()<5652){
+                facing = right;setX(x()+10); turning_x=x();
+            }
+        }
     }else if(id==7){
         if(facing==right){
             if(x()>7622){
@@ -243,17 +251,20 @@ void Enemy::Turn(){
         if(facing==right) {facing=left; setX(x()-20);turning_x=x();}
         else {facing=right;setX(x()+20);turning_x=x();}
     }else {
-        if(id==7){
-            if(facing==right){
-                if(x()>7622){
+        if(id==7&&level==scene_2)
+        {
+            if(facing==right)
+            {
+                if(x()>(7622-pixmap().width())){
                     facing = left;setX(x()-10); turning_x=x();
                 }
-            }else if(facing==left){
+            }else if(facing==left)
+            {
                 if(x()<7162){
                     facing = right;setX(x()+10); turning_x=x();
+                }
             }
-        }
-        }else if(id==11)
+        }else if(id==11&&level==scene_2)
         {
             if(facing==right)
             {
@@ -264,6 +275,36 @@ void Enemy::Turn(){
             }else if(facing==left)
             {
                 if(x()<5033)
+                {
+                    facing = right;setX(x()+10); turning_x=x();
+                }
+            }
+        }else if(id==3&&level==scene_1)
+        {
+            if(facing==right)
+            {
+                if(x()>2600)
+                {
+                    facing = left;setX(x()-10); turning_x=x();
+                }
+            }else if(facing==left)
+            {
+                if(x()<2166)
+                {
+                    facing = right;setX(x()+10); turning_x=x();
+                }
+            }
+        }else if(id==5&&level==scene_1)
+        {
+            if(facing==right)
+            {
+                if(x()>3880)
+                {
+                    facing = left;setX(x()-10); turning_x=x();
+                }
+            }else if(facing==left)
+            {
+                if(x()<3708)
                 {
                     facing = right;setX(x()+10); turning_x=x();
                 }

@@ -22,10 +22,10 @@ private:
 
     double spaw_x,spaw_y;
     bool isCollision();
-    bool isCollideEnemy();
+    bool CollideEnemy();
     bool isDoor();
     bool isEnemy();
-    int hp=0,life=0;
+    int hp=5,life=3;
 
     void Animation();
 
@@ -35,6 +35,7 @@ private:
     void moveDown();
     void moveStop();
     void moveAttack();
+    void moveHurt();
 
     bool isGrounded = 1;
     bool isWalkable = 1;
@@ -44,6 +45,7 @@ private:
     int Right_frames = 0;//how many frames does Key_Right pressed
     int Up_frames = 0;
     int Attk_frames = 0;
+    int hurt_frames = 120;
     const int image_frame = 15;//the duration of a image in frames(image per frame)
 
     int Down_time = 0;
@@ -61,6 +63,7 @@ private:
     bool isDown_keyPressed = 0;
     bool isRight_keyPressed = 0;
     bool isLeft_keyPressed = 0;
+    bool isXPressed =0;
 
     //state of kirby
 
@@ -69,7 +72,8 @@ private:
         move_ground,
         move_jump,
         move_flying,
-        move_attack
+        move_attacking,
+        move_hurt
     };
     enum state{
         state_air,
