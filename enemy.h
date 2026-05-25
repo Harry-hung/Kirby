@@ -12,11 +12,14 @@ public:
     ~Enemy();
     void update();
     void setDead(bool dead);
-
+    void respawn();
+    bool isDead(){return isdead;}
+    QPointF getRespawn(){QPointF spawn(spaw_x,spaw_y); return spawn;}
+    int getType()const{return type;}
 private:
     double spaw_x, spaw_y;
     int turning_x, turning_y;
-    bool isdead =0;
+    bool isdead = false;
 
     double temp_x,temp_y;
     bool isYWeird();

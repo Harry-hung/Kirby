@@ -53,6 +53,10 @@ Enemy::~Enemy(){
         types[i] = -1;
 };
 void Enemy::update(){
+    if(isdead)
+    {
+
+    }
     if(type==Sparky) spark_movement();
     else if((id==12||id==10)&&level==scene_2){
         updownMove();
@@ -216,7 +220,7 @@ void Enemy::spark_movement(){
         }
         }
 
-    }
+    }else Turn();
 
 
     //deal y direction
@@ -309,9 +313,23 @@ void Enemy::Turn(){
                     facing = right;setX(x()+10); turning_x=x();
                 }
             }
-        }else
+        }else if(type == Hot_Head)/*the image of hot heed is weird when turning,
+                                   so i move a little bit more than others*/
         {
             if(facing==right)
+            {
+                if(x()-turning_x > turning_distance)
+                {
+                    facing = left;setX(x()-25); turning_x=x();
+                }
+            }else if(facing==left){
+                if(turning_x-x() > turning_distance){
+                    facing = right;setX(x()+25); turning_x=x();
+                }
+            }
+        }
+        else{
+         if(facing==right)
             {
                 if(x()-turning_x > turning_distance)
                 {
@@ -336,7 +354,7 @@ bool Enemy::isWallBlocked(){
         {
             //if the item is lower than enemy, then it's ground
             if(type==Sparky){
-                if(item->y() > (this->y()+this->pixmap().height()-40)){
+                if(item->y() > (this->y()+this->pixmap().height()-20)){
                     continue;
                 }
             }
@@ -388,6 +406,17 @@ void Enemy::handelCollisionY(){
 
 void Enemy::setDead(bool dead){
    isdead=dead;
+   if(dead)
+   {
+    setVisible(false);
+   }
+}
+
+void Enemy::respawn(){
+    setVisible(true);
+    isdead=false;
+    setPos(spaw_x,spaw_y);
+    turning_x = spaw_x;
 }
 
 

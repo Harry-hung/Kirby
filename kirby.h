@@ -2,6 +2,7 @@
 #define KIRBY_H
 
 #include "gameobject.h"
+#include "enemy.h"
 #include <QKeyEvent>
 //Special class of gameObject: player
 
@@ -12,6 +13,7 @@ public:
 
     void handleCollisionX();
     void handleCollisionY();
+    void handelCollideEnemy();
     void handlePressEvent(QKeyEvent *event);
     void handleReleaseEvent(QKeyEvent *event);
     void updateMovement(int speed);
@@ -22,9 +24,8 @@ private:
 
     double spaw_x,spaw_y;
     bool isCollision();
-    bool CollideEnemy();
     bool isDoor();
-    bool isEnemy();
+    bool isEnemy(Enemy* output_item=nullptr);
     int hp=5,life=3;
 
     void Animation();
@@ -36,6 +37,7 @@ private:
     void moveStop();
     void moveAttack();
     void moveHurt();
+    void moveInhale();
 
     bool isGrounded = 1;
     bool isWalkable = 1;
@@ -73,6 +75,7 @@ private:
         move_jump,
         move_flying,
         move_attacking,
+        move_inhale,
         move_hurt
     };
     enum state{
@@ -80,14 +83,20 @@ private:
         state_full, state_fire,
         state_spark, state_normal
     };
-
+    bool isAir=0;//if kirby is inflat
     state state = state_normal;
-    move move = move_ground;
+    move move = move_stop;
 
     const double jump_speed = -20;
     const double flying_speed = -10;
     double vy = 0; // the start jumping speed 13
     const double gravity = 1;
+
+    //Knock back by enemy
+    double vx = 0;
+    const double knockup_sped = -10;
+    const double knockback_sped = 10;
+    const double friction = 1;
 
     //the highest pixel kirby can walk off
     const int maxWalkingHeight = 4;

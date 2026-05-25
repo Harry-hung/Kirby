@@ -11,29 +11,73 @@ Kirby::Kirby(QString path, QGraphicsScene *Scene,double spw_x, double spw_y):Gam
 }
 
 void Kirby::updateMovement(int speed){
+   /* switch(move){
+    case move_attacking:
+        std::cout<<"attacking"<<std::endl;
+        break;
+    case move_flying:
+        std::cout<<"flying"<<std::endl;
+        break;
+    case move_ground:
+        std::cout<<"ground"<<std::endl;
+        break;
+    case move_hurt:
+        std::cout<<"hurt"<<std::endl;
+        break;
+    case move_inhale:
+        std::cout<<"inhale"<<std::endl;
+        break;
+    case move_jump:
+        std::cout<<"jump"<<std::endl;
+        break;
+    case move_stop:
+        std::cout<<"stop"<<std::endl;
+        break;
+
+    }
+*/
     temp_x = x();
 
-    if(isEnemy()&&move!=move_attacking&&hurt_frames==120)
-    {
-        CollideEnemy();
-        move=move_ground;
-        hp--;
-        state=state_normal;
-        hurt_frames=0;
-    }
     if(isYWeird()){
         setY(y_pre_frame);
         return;
     }
     y_pre_frame=y();
-    if(move==move_attacking)
+
+//attack & inhale
+    if(isXPressed&&state!=state_normal)
     {
+        move=move_attacking;
+    }else if(isXPressed && move==move_ground)//if state is normal
+    {
+        moveInhale();
+        return;
+    }
+    if(move==move_attacking){
         moveAttack();
         return;
     }
-    if(hurt_frames<120)
-        moveHurt();
 
+//enemy collision
+    if(isEnemy()&&move!=move_attacking&&hurt_frames==120)
+    {
+        handelCollideEnemy();
+
+    }
+    //hurt animation
+    if(hurt_frames<120)
+    {
+        moveHurt();
+    }
+    if(hurt_frames<15)
+    {//knockback within the 0.25s after collide with enemy
+     //here only calculate the x, the gravity is dealing the y
+        setX(x()+vx);
+        if(facing==left) vx+=friction;
+        else vx-=friction;
+    }else vx=0;
+
+//x direction
     if(isDown_keyPressed&&!(move==move_flying)&&!(move==move_jump)) moveDown();
     else
     {
@@ -43,35 +87,37 @@ void Kirby::updateMovement(int speed){
             else if(isRight_keyPressed){ moveRight(speed); Left_frames = 0;}
         }
         handleCollisionX();
-
+//y direction
         temp_y = y();
         if(Down_time >0){
              Down_time = 0;
             }
-        if(isUp_keyPressed&&move){
+        if(isUp_keyPressed){
             moveUp();
-            if(isGrounded&&state!=state_air){
+            if(isGrounded&&!isAir){
                 Up_frames=0;
                 move=move_jump;
                 vy = jump_speed;
                 isGrounded=0;
                 Uptime=1;
             }else if(Uptime==0){
+                state=state_air;
                 move=move_flying;
                 vy = flying_speed;
                 Uptime=1;
             }
         }else Uptime=0;
-        if(move == move_flying||state==state_air){
-            vy+=0.5;
-            if(vy>2.5) vy=2.5;
 
+       if(move == move_flying||isAir){
+           vy+=0.5;
+           if(vy>2.5) vy=2.5;
        }else{
+            //gravity
             vy += gravity;
             if(vy>(-jump_speed)) vy=-jump_speed;
         }
 
-        //for animation
+        //for animation in air
         if(move==move_flying||move==move_jump) moveUp();
 
         setY(y()+vy);
@@ -112,7 +158,7 @@ void Kirby::moveLeft(int speed){
     }
 
     setPos(x() - speed, y());
-    if(move == move_ground && state==state_normal){
+    if(move == move_ground && state==state_normal&&!isAir){
         if(Left_frames <image_frame){
             setPixmap(QPixmap(":/Image/Kirby_normal/kirby_run_1_L.png"));
             Left_frames++;
@@ -123,7 +169,7 @@ void Kirby::moveLeft(int speed){
             setPixmap(QPixmap(":/Image/Kirby_normal/kirby_run_3_L.png"));
             Left_frames++;
         } else Left_frames = 0;
-    }else if(state==state_air && move==move_ground){
+    }else if(isAir && move==move_ground){
             if(Left_frames < image_frame){
                 setPixmap(QPixmap(":/Image/Kirby_normal/kirby_fly_1_L.png"));
                 Left_frames++;
@@ -140,7 +186,7 @@ void Kirby::moveRight(int speed){
         moveStop();
         return;
     }
-    if(state==state_normal&&move == move_ground){
+    if(state==state_normal&&move == move_ground&&!isAir){
             if(Right_frames < image_frame){
                 setPixmap(QPixmap(":/Image/Kirby_normal/kirby_run_1_R.png"));
                 Right_frames++;
@@ -152,7 +198,7 @@ void Kirby::moveRight(int speed){
                 Right_frames++;
             }else Right_frames = 0;
 
-    }else if(state==state_air&&move == move_ground){
+    }else if(isAir&&move == move_ground){
         if(move==move_ground){
             if(Right_frames < image_frame){
                 setPixmap(QPixmap(":/Image/Kirby_normal/kirby_fly_1_R.png"));
@@ -169,7 +215,8 @@ void Kirby::moveRight(int speed){
 }
 void Kirby::moveUp(){
     if(move == move_flying){//flying animation
-        state=state_air;
+        isAir=1;
+    if(isAir){
         if(facing==right){
             if(Up_frames<image_frame){
                 setPixmap(QPixmap(":/Image/Kirby_normal/kirby_fly_1_R.png"));
@@ -190,6 +237,7 @@ void Kirby::moveUp(){
                 if(Up_frames==2*image_frame)Up_frames=0;
                 }
             }
+        }
     }else if(move==move_jump){//jump motion
         if(facing==right){
             if(vy<-3){
@@ -231,7 +279,6 @@ void Kirby::moveDown(){
 }
 
 void Kirby::moveStop(){
-
     setScale(1);
     if(state == state_normal){
         if(facing == left)
@@ -244,35 +291,130 @@ void Kirby::moveStop(){
 void Kirby::moveHurt()
 {
     if ((hurt_frames / 4) % 2 == 0) {
-        setOpacity(0.3f);
+        setOpacity(0.5f);
     } else {
         setOpacity(1.0f);
     }
     hurt_frames++;
 }
 
-bool Kirby::isYWeird(){
-    bool maybe=0;
-    if(y()-y_pre_frame>30 || y()-y_pre_frame<-30)
-    {maybe=1;}
-    return maybe;
+void Kirby::moveInhale()
+{
+    move =move_inhale;
+    QRectF inhaleZone;
+    if (facing == right)
+    {
+        inhaleZone = QRectF(x() + pixmap().width(), y(), 150, pixmap().height());
+    } else {
+        inhaleZone = QRectF(x() - 150, y(), 150, pixmap().height());
+    }
+    QList<QGraphicsItem*> items_in_zone = scene->items(inhaleZone);
+        for(QGraphicsItem* item : items_in_zone) {
+            if(item->data(0) == "Enemy"&&item->data(1)=="halable") {
+                double enemy_x = item->x();
+                double pull_speed = 5.0;
+
+                if (enemy_x > x()) item->setX(enemy_x - pull_speed);
+                else item->setX(enemy_x + pull_speed);
+
+                Enemy* enemy_inhale=nullptr;
+                if(isEnemy(enemy_inhale)){
+                    enemy_inhale->setDead(true);
+                }
+            }
+        }
 }
 
+
+
 void Kirby::moveAttack(){
-    if(state==state_air){
+    move=move_attacking;
+    Attk_frames++;
+    switch(state){
+    case state_air:
+        isAir=0;
+        Uptime=0;
         switch (facing){
         case left:
-            setPixmap(QPixmap(":/Image/Kirby_normal/kirby_attack_L.png"));
+                setPixmap(QPixmap(":/Image/Kirby_normal/kirby_attack_L.png"));
+                if(Attk_frames<image_frame){
+                    Attk_frames++;
+                }else if(Attk_frames<image_frame*2){
+                    Attk_frames++;
+                }else { Attk_frames=0;move=move_stop;state=state_normal;
+                setPixmap(QPixmap(":/Image/Kirby_normal/kirby_stop_L.png"));}
+                    break;
+        case right:
+                setPixmap(QPixmap(":/Image/Kirby_normal/kirby_attack_R.png"));
+                if(Attk_frames<image_frame){
+                    Attk_frames++;
+                }else if(Attk_frames<image_frame*2){
+                    Attk_frames++;
+                }else { Attk_frames=0;move=move_stop;state=state_normal;
+                setPixmap(QPixmap(":/Image/Kirby_normal/kirby_stop_R.png"));}
+                    break;
+            break;
+        }
+    break;
+    case state_fire:
+        switch (facing){
+        case left:
+                setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_attack_L.png"));
+                if(Attk_frames<image_frame){
+                    Attk_frames++;
+                }else if(Attk_frames<image_frame*2){
+                    Attk_frames++;
+                }else{ Attk_frames=0;move=move_stop;}
+                    break;
+        case right:
+                setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_attack_R.png"));
+                if(Attk_frames<image_frame){
+                    Attk_frames++;
+                }else if(Attk_frames<image_frame*2){
+                    Attk_frames++;
+                }else Attk_frames=0;
+                    break;
+            break;
+        }
+    break;
+    case state_spark:
+        switch (facing){
+        case left:
+                if(Attk_frames<image_frame){
+                    setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_attack(1).png"));
+                    Attk_frames++;
+                }else if(Attk_frames<image_frame*2){
+                    setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_attack(2).png"));
+                    Attk_frames++;
+                }else if(Attk_frames<image_frame*3){
+                    setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_attack(3).png"));
+                    Attk_frames++;
+                }else if(Attk_frames<image_frame*4){
+                    setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_attack(2).png"));
+                    Attk_frames++;
+                }else{ Attk_frames=0;move=move_stop;}
+                    break;
+        case right:
             if(Attk_frames<image_frame){
+                setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_attack(1).png"));
                 Attk_frames++;
             }else if(Attk_frames<image_frame*2){
+                setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_attack(2).png"));
                 Attk_frames++;
-            }else Attk_frames=0;
-                break;
-        case right:
-            if(Attk_frames<image_frame) ;
-        break;
+            }else if(Attk_frames<image_frame*3){
+                setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_attack(3).png"));
+                Attk_frames++;
+            }else if(Attk_frames<image_frame*4){
+                setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_attack(2).png"));
+                Attk_frames++;
+            }else{ Attk_frames=0;move=move_stop;}
+            break;
         }
+    break;
+    case state_full:
+    break;
+    default:
+    move=move_stop;
     }
 }
 
@@ -326,6 +468,13 @@ void Kirby::handleCollisionX(){
 
 }
 
+bool Kirby::isYWeird(){
+    bool maybe=0;
+    if(y()-y_pre_frame>30 || y()-y_pre_frame<-30)
+    {maybe=1;}
+    return maybe;
+}
+
 void Kirby::handleCollisionY(){
     if(!isCollision()){
         isGrounded = 0;
@@ -361,19 +510,25 @@ bool Kirby::isCollision(){
 }
 
 
-bool Kirby::CollideEnemy(){
+void Kirby::handelCollideEnemy(){
+    move=move_ground;
+    hp--;
+    state=state_normal;
+    isAir=0;
+    hurt_frames=0;
     QList<QGraphicsItem*> enemys= scene->collidingItems(this);
     for(QGraphicsItem* item : enemys){
         if(item->data(0)=="Enemy"){
             if(item->x() > x())
             {
-                setX(x()-20);
+                vx=-knockback_sped;
             }else
-                setX(x()+20);
-            return true;
+                vx=knockback_sped;
+            vy=knockup_sped;
+            return ;
         }
     }
-    return false;
+    return;
 }
 
 bool Kirby::isDoor(){
@@ -392,12 +547,17 @@ bool Kirby::isNextScene(){
     return 0;
 }
 
-bool Kirby::isEnemy(){
+bool Kirby::isEnemy(Enemy* output_ememy){
     QList<QGraphicsItem*> items_hit = scene-> collidingItems(this);
     for(QGraphicsItem* item : items_hit)
         if(item->data(0)=="Enemy")
+        {
+            output_ememy= dynamic_cast<Enemy*>(item);
+            if(output_ememy->getType()!=1)//type!=Gordo
+                output_ememy->setDead(true);
             return true;
-    return 0;
+        }
+    return false;
 }
 
 
