@@ -185,7 +185,7 @@ void MainWindow::switchScene(){
         Item_Default();
         loadTiledMap(":/scene_1.json");
         player->setY(player->y()-60);
-     //player->setX(4800);
+     player->setX(4800);
         setBG(":/Image/background/Background.jpg");
         break;
     case scene_2:

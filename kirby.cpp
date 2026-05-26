@@ -3,6 +3,7 @@
 Kirby::Kirby(QString path, QGraphicsScene *Scene,double spw_x, double spw_y):GameObject(path, Scene)
 {
     setZValue(1);
+    setData(0,"Player");
     state =state_normal;
     move = move_ground;
     facing=right;

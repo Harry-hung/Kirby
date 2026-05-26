@@ -16,6 +16,7 @@ public:
     bool isDead(){return isdead;}
     QPointF getRespawn(){QPointF spawn(spaw_x,spaw_y); return spawn;}
     int getType()const{return type;}
+    void Attk();//attack movement
 private:
     double spaw_x, spaw_y;
     int turning_x, turning_y;
@@ -24,6 +25,8 @@ private:
     double temp_x,temp_y;
     bool isYWeird();
     void handelCollisionY();
+
+    bool isPlayerNear();
 
     //enemy type
     int id=-1;
@@ -51,6 +54,7 @@ private:
     };
 
     bool isWallBlocked();
+    bool isSolid();
     bool isBlocked();
 
     //level
@@ -58,7 +62,7 @@ private:
     const int scene_1 = 1, scene_2 = 2;
     QGraphicsScene* scene=nullptr;
 
-    //For Sparky jumping
+//For Sparky jumping
     double vy=0;
     const double gravity=1;
     const double jump_speed = -20; //the initial speed when jump
@@ -66,6 +70,9 @@ private:
 
     int jump_timer=0;//for how many frames has passed since last jump
     const int jump_interval=60; //the frame between jumps
+
+    //the attk interval
+    int attk_timer=180;// 3s
 };
 
 #endif // ENEMY_H

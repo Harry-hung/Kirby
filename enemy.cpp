@@ -53,11 +53,11 @@ Enemy::~Enemy(){
         types[i] = -1;
 };
 void Enemy::update(){
-    if(isdead)
-    {
 
+    if(type==Sparky)
+    {
+        spark_movement();
     }
-    if(type==Sparky) spark_movement();
     else if((id==12||id==10)&&level==scene_2){
         updownMove();
     }
@@ -180,8 +180,14 @@ void Enemy::updownMove(){
 void Enemy::spark_movement(){
    // std::cout<<isGrounded<<std::endl;
     //deal x coordinate first
-    //the speed parallel to x
-    const double jump_x_spd=5;
+
+    //sparkkkkk
+    attk_timer++;
+    if(attk_timer>=180&&isSolid()){
+        Attk();
+    }else{
+
+    const double jump_x_spd=5;//the speed parallel to x
     if(!isGrounded){
         temp_x=x();
         if(facing==right)
@@ -258,6 +264,8 @@ void Enemy::spark_movement(){
         else if(facing==left)
             setPixmap(QPixmap(":/Image/Sparky/Sparky_left_1.png").scaled(148,148,Qt::KeepAspectRatio));
     }
+    }
+
 }
 
 void Enemy::Turn(){
@@ -407,6 +415,17 @@ void Enemy::handelCollisionY(){
     }
 }
 
+bool Enemy::isSolid(){
+    QList<QGraphicsItem*> items_hit = scene->collidingItems(this);
+    for(QGraphicsItem* item:items_hit){
+        if(item->data(0)=="Solid"){
+            return true;
+        }
+    }
+    return false;
+
+}
+
 void Enemy::setDead(bool dead){
    isdead=dead;
    if(dead)
@@ -420,6 +439,52 @@ void Enemy::respawn(){
     isdead=false;
     setPos(spaw_x,spaw_y);
     turning_x = spaw_x;
+}
+
+//i think its only for hot heed
+bool Enemy::isPlayerNear(){
+    QRectF fireZone;
+    if (facing == right)
+    {
+        fireZone = QRectF(x() + pixmap().width(), y(), 500, pixmap().height());
+
+    } else {
+        fireZone = QRectF(x() , y(), 500, pixmap().height());
+    }
+
+    QList<QGraphicsItem*> items_in_zone = scene->items(fireZone);
+    for(QGraphicsItem* item : items_in_zone)
+    {
+        if(item->data(0)=="Player")
+        {
+            return true;
+        }
+    }
+    return false;
+
+}
+
+void Enemy::Attk()
+{
+    frame++;
+    switch (type) {
+        case Hot_Head:
+        break;
+        case Sparky:
+            if(frame<img_frame){
+                setPixmap(QPixmap(":/Image/Sparky/Sparky_attack_1.png").scaled(128,128,Qt::KeepAspectRatio));
+            }else if(frame<img_frame*6){
+                setOffset(-108,-108);
+                setPixmap(QPixmap(":/Image/Sparky/Sparky_attack_2.png").scaled(342,342,Qt::KeepAspectRatio));
+            }else {
+                setOffset(0,0);
+                setPixmap(QPixmap((facing==right)?":/Image/Sparky/Sparky_ritht_1.png":":/Image/Sparky/Sparky_left_1.png").scaled(148,148,Qt::KeepAspectRatio));
+                attk_timer=0;frame=0;
+            }
+        break;
+    default://other than Sparky&HotHeed
+        break;
+    }
 }
 
 
