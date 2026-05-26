@@ -4,6 +4,7 @@
 #include "gameobject.h"
 #include "enemy.h"
 #include <QKeyEvent>
+#include <cmath>
 //Special class of gameObject: player
 
 class Kirby : public GameObject
@@ -25,7 +26,7 @@ private:
     double spaw_x,spaw_y;
     bool isCollision();
     bool isDoor();
-    bool isEnemy(Enemy* output_item=nullptr);
+    bool isEnemy(Enemy** output_item=nullptr);
     int hp=5,life=3;
 
     void Animation();
@@ -38,6 +39,7 @@ private:
     void moveAttack();
     void moveHurt();
     void moveInhale();
+    bool isXreleasedAfterPress=1;
 
     bool isGrounded = 1;
     bool isWalkable = 1;
@@ -48,6 +50,7 @@ private:
     int Up_frames = 0;
     int Attk_frames = 0;
     int hurt_frames = 120;
+    int inhale_frames=0;
     const int image_frame = 15;//the duration of a image in frames(image per frame)
 
     int Down_time = 0;
@@ -83,6 +86,8 @@ private:
         state_full, state_fire,
         state_spark, state_normal
     };
+
+    const double kirby_fullheight=180;
     bool isAir=0;//if kirby is inflat
     state state = state_normal;
     move move = move_stop;

@@ -220,7 +220,17 @@ void Enemy::spark_movement(){
         }
         }
 
-    }else Turn();
+    }else if(id==6){
+        if(facing==right){
+            if(x()>4780){
+                facing = left;setX(x()-10); turning_x=x();
+            }
+        }else if(facing==left){
+            if(x()<4112){
+                facing = right;setX(x()+10); turning_x=x();
+            }
+        }
+    } else Turn();
 
 
     //deal y direction
@@ -251,11 +261,7 @@ void Enemy::spark_movement(){
 }
 
 void Enemy::Turn(){
-    if(isWallBlocked()){
-        if(facing==right) {facing=left; setX(x()-20);turning_x=x();}
-        else {facing=right;setX(x()+20);turning_x=x();}
-    }else {
-        if(id==7&&level==scene_2)
+    if(id==7&&level==scene_2)
         {
             if(facing==right)
             {
@@ -316,34 +322,31 @@ void Enemy::Turn(){
         }else if(type == Hot_Head)/*the image of hot heed is weird when turning,
                                    so i move a little bit more than others*/
         {
-            if(facing==right)
+            if(isWallBlocked())
             {
-                if(x()-turning_x > turning_distance)
+                if(facing==right) {facing=left; setX(x()-20);turning_x=x();}
+                else {facing=right;setX(x()+20);turning_x=x();}
+            }else
+            {
+                if(facing==right)
                 {
-                    facing = left;setX(x()-25); turning_x=x();
-                }
-            }else if(facing==left){
-                if(turning_x-x() > turning_distance){
-                    facing = right;setX(x()+25); turning_x=x();
+                    if(x()-turning_x > turning_distance)
+                    {
+                        facing = left;setX(x()-25); turning_x=x();
+                    }
+                }else if(facing==left){
+                    if(turning_x-x() > turning_distance){
+                        facing = right;setX(x()+25); turning_x=x();
+                    }
                 }
             }
-        }
-        else{
-         if(facing==right)
-            {
-                if(x()-turning_x > turning_distance)
-                {
-                    facing = left;setX(x()-10); turning_x=x();
-                }
-            }else if(facing==left){
-                if(turning_x-x() > turning_distance){
-                    facing = right;setX(x()+10); turning_x=x();
-                }
-            }
+        }else if(isWallBlocked())
+        {
+            if(facing==right) {facing=left; setX(x()-20);turning_x=x();}
+            else {facing=right;setX(x()+20);turning_x=x();}
         }
 
-        }
-    }
+}
 
 
 //blocked by terrain in x
@@ -359,7 +362,7 @@ bool Enemy::isWallBlocked(){
                 }
             }
             else{
-                if(item->y() > (this->y()+this->pixmap().height()-10)){
+                if(item->y() > (this->y()+this->pixmap().height()-5)){
                     continue;
                 }
             }

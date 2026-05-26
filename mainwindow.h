@@ -21,6 +21,7 @@
 #include <QDebug>
 #include <QTimer>
 #include <QKeyEvent>
+#include <QtNumeric>
 
 #include "kirby.h"
 #include "enemy.h"

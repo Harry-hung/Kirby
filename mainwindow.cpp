@@ -29,6 +29,19 @@ void MainWindow::gameUpdate(){
             player ->updateMovement(4);
             QPointF playerPos_onScene = player->mapToScene(0,0);
             view->centerOn(playerPos_onScene.x()+50,540);
+
+            //Enemy Respawn
+            for(Enemy* enemy : enemys){
+                if(enemy->isDead()){
+                    double d_kirby=qAbs(enemy->x()-player->x());
+                    if(d_kirby>1000)
+                    {
+                        enemy->respawn();
+                    }
+                }
+            }
+
+            //Kirby through door
             if(player->isNextScene()){
                 if(game_scene==scene_1)game_scene = scene_2;
                 else if(game_scene==scene_2)game_scene = scene_clear;
