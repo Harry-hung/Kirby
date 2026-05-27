@@ -40,8 +40,6 @@ private:
     void moveAttack();
     void moveHurt();
     void moveInhale();
-    bool isXreleaseAfterInhale =1;
-    // bool isXreleasedAfterPress=1;
 
 
 
@@ -79,6 +77,10 @@ private:
     bool isRight_keyPressed = 0;
     bool isLeft_keyPressed = 0;
     bool isXPressed =0;
+    bool isVPressed = 0;
+
+    bool isVrelease=1;
+    bool isXrelease=1;
 
     //state of kirby
 

@@ -182,12 +182,15 @@ void Enemy::spark_movement(){
     //deal x coordinate first
 
     //sparkkkkk
-    attk_timer++;
     if(attk_timer>=180&&isSolid()){
+        isAttacking=1;
+        attk_timer=0;
+    }else if(isAttacking){
         Attk();
-    }else{
-
-    const double jump_x_spd=5;//the speed parallel to x
+    }else
+    {
+        attk_timer++;
+        const double jump_x_spd=5;//the speed parallel to x
     if(!isGrounded){
         temp_x=x();
         if(facing==right)
@@ -477,6 +480,7 @@ void Enemy::Attk()
         break;
         case Sparky:
             if(frame<img_frame){
+                setOffset(0,-10);
                 setPixmap(QPixmap(":/Image/Sparky/Sparky_attack_1.png").scaled(128,128,Qt::KeepAspectRatio));
             }else if(frame<img_frame*6){
                 setOffset(-108,-108);
@@ -484,7 +488,7 @@ void Enemy::Attk()
             }else {
                 setOffset(0,0);
                 setPixmap(QPixmap((facing==right)?":/Image/Sparky/Sparky_ritht_1.png":":/Image/Sparky/Sparky_left_1.png").scaled(148,148,Qt::KeepAspectRatio));
-                attk_timer=0;frame=0;
+                attk_timer=0;frame=0;isAttacking=0;
             }
         break;
     default://other than Sparky&HotHeed

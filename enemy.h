@@ -38,6 +38,7 @@ private:
     void setImg();
     void movement();
     void spark_movement();
+    bool isAttacking=0;
     void Turn();
     void updownMove();
     enum vertical_facing{down,up};
