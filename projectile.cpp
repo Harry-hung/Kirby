@@ -7,7 +7,7 @@ Projectile::Projectile(QGraphicsScene* game_scene,
     frame=0;
     setPos(spaw_x,spaw_y);
     setZValue(4);
-    if(target_name=="Player") setData(0,"FireBall");
+    if(target_name=="Player") setData(0,"Fireball");
     if(target_name=="Enemy") setData(0,"Bullet");
     if(type=="Fireball") setPixmap(QPixmap(":/Image/Hot_Head/hotheed_fireball.png"));
     if(type=="Gas") setPixmap(QPixmap((facing==right)?":/Image/Kirby_normal/air_R.png":":/Image/Kirby_normal/air_L.png").scaledToHeight(100));
@@ -66,6 +66,11 @@ bool Projectile::hit()
         }
         if(item->data(0)==target)
         {
+            if(target=="Enemy")
+            {
+                Enemy* enemy = dynamic_cast<Enemy*>(item);
+                if(item->data(1)!="Inhalable") enemy->setDead(true);//Not Gordo
+            }
             return true;
         }
     }

@@ -34,7 +34,7 @@ void MainWindow::gameUpdate(){
             for(Enemy* enemy : enemys){
                 if(enemy->isDead()){
                     double d_kirby=qAbs(enemy->x()-player->x());
-                    if(d_kirby>1000)
+                    if(d_kirby>1300)
                     {
                         enemy->respawn();
                     }

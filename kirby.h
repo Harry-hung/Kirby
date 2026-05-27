@@ -41,7 +41,9 @@ private:
     void moveHurt();
     void moveInhale();
     bool isXreleaseAfterInhale =1;
-   // bool isXreleasedAfterPress=1;
+    // bool isXreleasedAfterPress=1;
+
+
 
     bool isGrounded = 1;
     bool isWalkable = 1;
@@ -53,6 +55,12 @@ private:
     int Attk_frames = 0;
     int hurt_frames = 120;
     int inhale_frames=0;
+
+    const int Waddle_Dee = 0, Gordo = 1,
+        Hot_Head = 2, Sparky = 3;
+
+    int enemy_type=Waddle_Dee;
+
     const int image_frame = 15;//the duration of a image in frames(image per frame)
 
     int Down_time = 0;

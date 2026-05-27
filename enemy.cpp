@@ -464,6 +464,11 @@ bool Enemy::isPlayerNear(){
 
 }
 
+
+
+
+
+
 void Enemy::Attk()
 {
     frame++;

@@ -2,6 +2,7 @@
 #define PROJECTILE_H
 
 #include "gameobject.h"
+#include "enemy.h"
 #include <cmath>
 class Projectile : public GameObject
 {
