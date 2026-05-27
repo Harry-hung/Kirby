@@ -39,7 +39,8 @@ private:
     void moveAttack();
     void moveHurt();
     void moveInhale();
-    bool isXreleasedAfterPress=1;
+    bool isXreleaseAfterInhale =1;
+   // bool isXreleasedAfterPress=1;
 
     bool isGrounded = 1;
     bool isWalkable = 1;
