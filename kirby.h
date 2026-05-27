@@ -3,6 +3,7 @@
 
 #include "gameobject.h"
 #include "enemy.h"
+#include "projectile.h"
 #include <QKeyEvent>
 #include <cmath>
 //Special class of gameObject: player
@@ -59,8 +60,8 @@ private:
 
     //where kirby faceing left=0, right=1
     enum facing{
-        left =0,
-        right =1,
+        left =1,
+        right =0,
     };
     facing facing = right;
 

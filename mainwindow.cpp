@@ -52,6 +52,9 @@ void MainWindow::gameUpdate(){
         }else qDebug()<<"Failed to load Kirby";
     }
 
+    //projectile
+    projUpdate();
+
     //button
     if(exit_button){
         exit_button ->update();
@@ -367,6 +370,20 @@ void MainWindow::loadTiledMap(QString json_path){
         }
     }
 
+}
+
+
+void MainWindow::projUpdate()
+{
+    QList<QGraphicsItem*> allitem=Scene->items();
+    for(QGraphicsItem* item : allitem)
+    {
+        if(item->data(0)=="Fireball"||item->data(0)=="Bullet")
+        {
+            Projectile* proj= dynamic_cast<Projectile*>(item);
+            proj->update();
+        }
+    }
 }
 
 

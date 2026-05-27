@@ -437,21 +437,25 @@ void Kirby::moveAttack(){
         switch (facing){
         case left:
                 setPixmap(QPixmap(":/Image/Kirby_normal/kirby_attack_L.png"));
-                if(Attk_frames<image_frame){
+                if(Attk_frames<2){
+                    scene->addItem(new Projectile(scene,x()-50,y()+10,"Enemy",facing,"Gas"));
                     Attk_frames++;
-                }else if(Attk_frames<image_frame*2){
+                }else if(Attk_frames<image_frame*1.2){
                     Attk_frames++;
                 }else { Attk_frames=0;move=move_ground;state=state_normal;std::cout<<"here"<<std::endl;
-                setPixmap(QPixmap(":/Image/Kirby_normal/kirby_stop_L.png"));}
+                    setPixmap(QPixmap(":/Image/Kirby_normal/kirby_stop_L.png"));
+                }
                     break;
         case right:
                 setPixmap(QPixmap(":/Image/Kirby_normal/kirby_attack_R.png"));
-                if(Attk_frames<image_frame){
+                if(Attk_frames<2){
+                    scene->addItem(new Projectile(scene,x()+50,y()+10,"Enemy",facing,"Gas"));
                     Attk_frames++;
                 }else if(Attk_frames<image_frame*2){
                     Attk_frames++;
                 }else { Attk_frames=0;move=move_stop;state=state_normal;
-                setPixmap(QPixmap(":/Image/Kirby_normal/kirby_stop_R.png"));}
+                    setPixmap(QPixmap(":/Image/Kirby_normal/kirby_stop_R.png"));
+                }
                     break;
             break;
         }
@@ -506,13 +510,35 @@ void Kirby::moveAttack(){
 
     break;
     case state_full:
-        //just for now
-        move=move_ground;
-        Attk_frames=0;
-        state=state_normal;
+    switch(facing){
+        case left:
+                setPixmap(QPixmap(":/Image/Kirby_normal/kirby_attack_L.png"));
+                if(Attk_frames<2){
+                    scene->addItem(new Projectile(scene,x()-50,y()+10,"Enemy",facing,"Star"));
+                    Attk_frames++;
+                }else if(Attk_frames<image_frame*1.2){
+                    Attk_frames++;
+                }else { Attk_frames=0;move=move_ground;state=state_normal;std::cout<<"here"<<std::endl;
+                    setPixmap(QPixmap(":/Image/Kirby_normal/kirby_stop_L.png"));
+                }
+        break;
+        case right:
+                setPixmap(QPixmap(":/Image/Kirby_normal/kirby_attack_R.png"));
+                if(Attk_frames<2){
+                    Attk_frames++;
+                }else if(Attk_frames<image_frame*1.2){
+                    Attk_frames++;
+                }else { Attk_frames=0;move=move_stop;state=state_normal;
+                    setPixmap(QPixmap(":/Image/Kirby_normal/kirby_stop_R.png"));
+                    scene->addItem(new Projectile(scene,x()+50,y()+10,"Enemy",facing,"Star"));
+                }
+        break;
+
+    }
     break;
     default:
     move=move_stop;
+    break;
     }
 }
 

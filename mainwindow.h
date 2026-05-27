@@ -31,6 +31,7 @@
 #include "exit_button.h"
 #include "stages.h"
 #include "door.h"
+#include "projectile.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -55,6 +56,8 @@ public:
 
     bool eventFilter(QObject *obj, QEvent *event) override;
     bool isPlayerGround();
+
+    void projUpdate();
 
 private slots:
     void gameUpdate();
