@@ -20,7 +20,7 @@ public:
     void handleReleaseEvent(QKeyEvent *event);
     void updateMovement(int speed);
     bool isNextScene();
-    int y_pre_frame=0;
+    double y_pre_frame=0;
 
 private:
 
@@ -37,10 +37,14 @@ private:
     void moveUp();
     void moveDown();
     void moveStop();
-    void moveAttack();
     void moveHurt();
     void moveInhale();
 
+    void moveAttack();
+    void spark_attk();
+    void fire_attk();
+
+    void handelEnemyinHitbox(QRectF box);
 
 
     bool isGrounded = 1;
@@ -124,6 +128,11 @@ private:
 
     int frame_couter=0;
     bool isYWeird();
+
+
+
+    //debug
+    QGraphicsRectItem* debugFireRect=nullptr;
 
 };
 

@@ -53,28 +53,54 @@ Enemy::~Enemy(){
         types[i] = -1;
 };
 void Enemy::update(){
-
-    if(type==Sparky)
-    {
-        spark_movement();
-    }
-    else if((id==12||id==10)&&level==scene_2){
-        updownMove();
-    }
-    else {
-        movement();
-        temp_y=y();
-        Turn();
-        while(isBlocked()){
-            setY(y()-5);
+    if(isdying){
+        moveDead();
+        return;
+    }else if(!isdead){
+        if(type==Sparky)
+        {
+            spark_movement();
         }
-        if(isYWeird()){
-            if(y()-temp_y>50||y()-temp_y<50){
-                setY(temp_y);
+        else if((id==12||id==10)&&level==scene_2){
+            updownMove();
+        }
+        else {
+            if(type==Hot_Head){
+                if(attk_timer>=180&&isPlayerNear())
+                {
+                    frame=0;
+                    attk_timer=0; isAttacking=1;
+                }else if(isAttacking)Attk();
+                else
+                {
+                    attk_timer++;
+                    movement();
+                    temp_y=y();
+                    Turn();
+                    while(isBlocked()){
+                        setY(y()-5);
+                    }
+                    if(isYWeird()){
+                        if(y()-temp_y>50||y()-temp_y<50){
+                            setY(temp_y);
+                        }
+                    }
+                }
+            }else{
+            movement();
+            temp_y=y();
+            Turn();
+            while(isBlocked()){
+                setY(y()-5);
+            }
+            if(isYWeird()){
+                if(y()-temp_y>50||y()-temp_y<50){
+                    setY(temp_y);
+                }
+            }
             }
         }
     }
-
 
 }
 
@@ -430,14 +456,16 @@ bool Enemy::isSolid(){
 }
 
 void Enemy::setDead(bool dead){
+   if(type==Sparky&&isAttacking)
+        return;
    isdead=dead;
-   if(dead)
-   {
-    setVisible(false);
-   }
+   isdying=1;
+   setData(0,"DeadEnemy");
 }
 
 void Enemy::respawn(){
+    setOpacity(1.0f);
+    setData(0,"Enemy");
     setVisible(true);
     isdead=false;
     setPos(spaw_x,spaw_y);
@@ -449,10 +477,10 @@ bool Enemy::isPlayerNear(){
     QRectF fireZone;
     if (facing == right)
     {
-        fireZone = QRectF(x() + pixmap().width(), y(), 500, pixmap().height());
+        fireZone = QRectF(x()-500+pixmap().width()/2 , y(), 1000, pixmap().height());
 
     } else {
-        fireZone = QRectF(x() , y(), 500, pixmap().height());
+        fireZone = QRectF(x()-500+pixmap().width()/2 , y(), 1000, pixmap().height());
     }
 
     QList<QGraphicsItem*> items_in_zone = scene->items(fireZone);
@@ -460,9 +488,20 @@ bool Enemy::isPlayerNear(){
     {
         if(item->data(0)=="Player")
         {
+            if(attk_timer>=178)
+                facing=(item->x()>=x())?right:left;
             return true;
         }
     }
+    /*if (!debugFireRect) {
+                        // 如果方框還沒被建立，就建立一個紅色的空心方框 (線條粗細為 2)
+                        QPen redPen(Qt::red, 2);
+                        debugFireRect = scene->addRect(fireZone, redPen);
+                        debugFireRect->setZValue(10); // 確保這個除錯框會蓋在角色和地圖最上層
+                    } else {
+                        // 如果方框已經存在，就更新它的位置與大小，並確保它是顯示狀態
+                        debugFireRect->setRect(fireZone);
+                        debugFireRect->setVisible(true);}*/
     return false;
 
 }
@@ -477,6 +516,15 @@ void Enemy::Attk()
     frame++;
     switch (type) {
         case Hot_Head:
+            if(frame==1){
+                setPixmap(QPixmap((facing==left)?":/Image/Hot_Head/Hot_head_attack_L.png":":/Image/Hot_Head/Hot_head_attack_R.png"));
+                int dx=0;
+                dx=(facing==right)?50:-10;
+                scene->addItem(new Projectile(scene,x()+dx,y()+50,"Player",facing,"Fireball"));
+            }else if(frame>img_frame){
+                attk_timer=0;frame=0;isAttacking=0;
+            }
+
         break;
         case Sparky:
             if(frame<img_frame){
@@ -500,5 +548,26 @@ void Enemy::Attk()
     }
 }
 
+void Enemy::moveDead()
+{
+
+    dead_frame++;
+    if((dead_frame%4)/2==0){
+        setOpacity(0.5f);
+    }else if(dead_frame<90)
+        setOpacity(1.0f);
+    else{
+        setVisible(false);
+        isdying=0;
+    }
+
+}
+
+void Enemy::instantDead()
+{
+    isdead=1;
+    setVisible(0);
+    setData(0,"DeadEnemy");
+}
 
 

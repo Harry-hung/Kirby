@@ -54,6 +54,7 @@ void Kirby::updateMovement(int speed){
     }
     y_pre_frame=y();
 
+
 //attack & inhale
     if(isXPressed)
     {
@@ -170,6 +171,7 @@ void Kirby::updateMovement(int speed){
 
         setY(y()+vy);
 
+
     }
 
 
@@ -178,23 +180,11 @@ void Kirby::updateMovement(int speed){
 
 
 
-    if(!(isRight_keyPressed||isLeft_keyPressed||isUp_keyPressed||isDown_keyPressed)&&isGrounded)
+    if(!(isRight_keyPressed||isLeft_keyPressed||isUp_keyPressed||isDown_keyPressed)&&move==move_ground)
     {
-        temp_x =x(); temp_y = y();
-        for(int i=0;i<=10;i++)
-        {
-            setY(temp_y-i);
-            for(int j=0;j<=10;j++)
-            {
-                setX(temp_x-j);
-                if(!isCollision())
-                    break;
-            }
-            if(!isCollision())
-                break;
-        }
-        setPos(temp_x,temp_y);
-        moveStop();
+        if(move==move_jump)
+            moveUp();
+        else moveStop();
     }
 }
 
@@ -345,6 +335,7 @@ void Kirby::moveRight(int speed){
         }
     else if(state==state_fire)
         {
+
             if(Right_frames < image_frame){
                 setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_run(1)_R.png").scaledToHeight(173));
                 Right_frames++;
@@ -449,6 +440,7 @@ void Kirby::moveDown(){
 setOffset(0,0);
         if(state==state_full){
             setOffset(0,0);
+            setY(y()-20);
             if(enemy_type==Sparky) state=state_spark;
             else if(enemy_type==Hot_Head) state=state_fire;
             else state=state_normal;
@@ -482,7 +474,8 @@ setOffset(0,0);
 
 void Kirby::moveStop(){
     setScale(1);
-    if(state == state_normal){
+    if(state == state_normal&&!isAir){
+        setOffset(0,0);
         if(facing == left)
             setPixmap(QPixmap(":/Image/Kirby_normal/kirby_stop_L.png"));
         else if(facing == right)
@@ -539,12 +532,12 @@ void Kirby::moveInhale()
                 double dis_y = std::abs(y()-enemy_y);
                 //Eat
                 if(dis_x<160&&dis_y<160){
-                    enemy->setDead(true);
+                    enemy->instantDead();
                     move=move_ground;
                     state=state_full;
 
                     enemy_type=enemy->getType();
-                    setY(y()-130);
+                    setOffset(0,-50);
                     setPixmap(QPixmap((facing==right)?":/Image/Kirby_normal/kirby_full_stop_R.png":":/Image/Kirby_normal/kirby_full_stop_L.png").scaledToHeight(180));
                     return;
                     //isXreleasedAfterPress=0;
@@ -589,6 +582,7 @@ void Kirby::moveAttack(){
     switch(state){
     case state_air:
         isAir=0;
+        setOffset(0,0);
         Uptime=0;
         switch (facing){
         case left:
@@ -630,7 +624,7 @@ void Kirby::moveAttack(){
                         Attk_frames++;
                     }else if(Attk_frames<15){
                         Attk_frames++;
-                    }else { Attk_frames=0;move=move_ground;isAir=0;
+                    }else { Attk_frames=0;move=move_ground;isAir=0;//dont touch isAir
                         setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_stop_L.png").scaledToHeight(173));
                     }
                         break;
@@ -651,11 +645,12 @@ void Kirby::moveAttack(){
 
         else if(isGrounded)
         {
+            fire_attk();
             double fire_height=250;
-
+            QRectF kirbyHitbox;
             switch (facing){
             case left:
-                    setOffset(-220,-50);
+                    setOffset(-250,-50);
                     if(Attk_frames<image_frame){
                         Attk_frames++;
                         setPixmap(QPixmap(":/Image/Kirby_fire/kirby_fire_attk(2)_L.png").scaledToHeight(fire_height));
@@ -666,12 +661,14 @@ void Kirby::moveAttack(){
                         setPixmap(QPixmap(":/Image/Kirby_fire/kirby_fire_attk(3)_L.png").scaledToHeight(fire_height));
                         Attk_frames++;
                     }else{ Attk_frames=0;}
+                    kirbyHitbox=QRectF(x()+100,y()+50,75,75);
                         break;
             case right:
+                kirbyHitbox=QRectF(x()+90,y()+50,75,75);
                     setOffset(0,-50);
                     if(Attk_frames<image_frame){
-                        Attk_frames++;
                         setPixmap(QPixmap(":/Image/Kirby_fire/kirby_fire_attk(2)_R.png").scaledToHeight(fire_height));
+                        Attk_frames++;
                     }else if(Attk_frames<image_frame*2){
                         Attk_frames++;
                         setPixmap(QPixmap(":/Image/Kirby_fire/kirby_fire_attack_R.png").scaledToHeight(fire_height));
@@ -680,8 +677,20 @@ void Kirby::moveAttack(){
                         setPixmap(QPixmap(":/Image/Kirby_fire/kirby_fire_attk(3)_R.png").scaledToHeight(fire_height));
                     }else Attk_frames=0;
                         break;
-                break;
+
             }
+            handelEnemyinHitbox(kirbyHitbox);
+
+/*            if (!debugFireRect) {
+                    // 如果方框還沒被建立，就建立一個紅色的空心方框 (線條粗細為 2)
+                    QPen redPen(Qt::red, 2);
+                    debugFireRect = scene->addRect(kirbyHitbox, redPen);
+                    debugFireRect->setZValue(10); // 確保這個除錯框會蓋在角色和地圖最上層
+                } else {
+                    // 如果方框已經存在，就更新它的位置與大小，並確保它是顯示狀態
+                    debugFireRect->setRect(kirbyHitbox);
+                    debugFireRect->setVisible(true);}
+*/
         }
     break;
     case state_spark:
@@ -711,17 +720,19 @@ void Kirby::moveAttack(){
                     }else { Attk_frames=0;move=move_ground;isAir=0;
                         setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_stop_R.png").scaledToHeight(173));
                     }
-                        break;
+
                 break;
             }
         }else if(isGrounded)
         {
+            QRectF kirbyHitbox;
+            spark_attk();
             if(Attk_frames<2)
             {
                 setOffset(0,0);
                 setPixmap(QPixmap(":/Image/Kirby_spark/kirby_spark_attack.png").scaledToHeight(340));
                 Attk_frames++;
-            }else if((Attk_frames%10)/4==0){
+           }else if((Attk_frames%10)/4==0){
                 setOffset(-70,-70);
                 setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_attack(2).png").scaledToHeight(340));
                 Attk_frames++;
@@ -735,7 +746,21 @@ void Kirby::moveAttack(){
                 setPixmap(QPixmap(":/Image/Kirby_spark/kirby_spark_attack(5).png").scaledToHeight(340));
                 Attk_frames++;
             }else{ Attk_frames=0;}
-        }
+            kirbyHitbox = QRectF(x()+100,y()+100,50,50);
+            handelEnemyinHitbox(kirbyHitbox);
+
+            /*if (!debugFireRect) {
+                    // 如果方框還沒被建立，就建立一個紅色的空心方框 (線條粗細為 2)
+                    QPen redPen(Qt::red, 2);
+                    debugFireRect = scene->addRect(kirbyHitbox, redPen);
+                    debugFireRect->setZValue(10); // 確保這個除錯框會蓋在角色和地圖最上層
+                } else {
+                    // 如果方框已經存在，就更新它的位置與大小，並確保它是顯示狀態
+                    debugFireRect->setRect(kirbyHitbox);
+                    debugFireRect->setVisible(true);}
+*/
+}
+
     break;
     case state_full:
 
@@ -771,6 +796,46 @@ void Kirby::moveAttack(){
     move=move_ground;
     break;
     }
+}
+
+void Kirby::spark_attk()
+{
+    if(state==state_spark&&move==move_attacking){
+        QList<QGraphicsItem*> items=scene->collidingItems(this);
+        for(QGraphicsItem* item:items)
+        {
+            if(item->data(0)=="Enemy")
+            {
+                Enemy* ene = dynamic_cast<Enemy*>(item);
+                if(ene->data(1)!="Inhalable")
+                    ene->setDead(true);
+            }
+        }
+    }
+}
+
+void Kirby::fire_attk()
+{
+    double rec_width=250;
+    double rec_height=130;
+    QRectF fireZone;
+    if(facing==right){
+        fireZone=QRectF(x()+150,y()+27,rec_width,rec_height);
+    }else
+        fireZone=QRectF(x()-200,y()+30,rec_width,rec_height);
+
+    if(state==state_fire&&move==move_attacking){
+        QList<QGraphicsItem*> itemsinzone = scene->items(fireZone);
+        for(QGraphicsItem* item:itemsinzone){
+            if(item->data(0)=="Enemy"){
+                Enemy* ene = dynamic_cast<Enemy*>(item);
+                if(ene->data(1)=="halable")
+                    ene->setDead(true);
+            }
+        }
+    }
+
+
 }
 
 void Kirby::handlePressEvent(QKeyEvent *event){
@@ -831,6 +896,10 @@ bool Kirby::isYWeird(){
     {maybe=1;}
     return maybe;
 }
+
+
+
+
 
 void Kirby::handleCollisionY(){
     if(!isCollision()){
@@ -907,7 +976,7 @@ bool Kirby::isNextScene(){
 bool Kirby::isEnemy(Enemy** output_ememy){
     QList<QGraphicsItem*> items_hit = scene-> collidingItems(this);
     for(QGraphicsItem* item : items_hit)
-        if(item->data(0)=="Enemy")
+        if(item->data(0)=="Enemy"||item->data(0)=="Fireball")
         {
             Enemy* eney = dynamic_cast<Enemy*>(item);
             if(output_ememy!=nullptr){
@@ -919,6 +988,34 @@ bool Kirby::isEnemy(Enemy** output_ememy){
 
         }
     return false;
+}
+
+void Kirby::handelEnemyinHitbox(QRectF box){
+    QList<QGraphicsItem*>itemsinbox=scene->items(box);
+    for(QGraphicsItem* item : itemsinbox)
+    {
+        if(item->data(0)=="Enemy"||item->data(0)=="Fireball")
+        {
+            move=move_ground;
+            hp--;
+            state=state_normal;
+            isAir=0;
+            hurt_frames=0;
+            if(item->data(1)=="halable")
+            {
+                Enemy* ene = dynamic_cast<Enemy*>(item);
+                ene->setDead(true);
+            }
+            if(item->x() > x())
+            {
+                vx=-knockback_sped;
+            }else
+                vx=knockback_sped;
+            vy=knockup_sped;
+            return ;
+        }
+    }
+    return;
 }
 
 

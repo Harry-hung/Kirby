@@ -72,7 +72,6 @@ bool Projectile::hit()
                 if(item->data(1)!="Inhalable") enemy->setDead(true);//Not Gordo
                 return true;
             }
-            return true;
         }
     }
     return false;

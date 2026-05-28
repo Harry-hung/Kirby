@@ -2,6 +2,7 @@
 #define ENEMY_H
 #include <random>
 #include "gameobject.h"
+#include "projectile.h"
 #include <QList>
 
 class Enemy : public GameObject
@@ -11,17 +12,22 @@ public:
           int spw_x, int spw_y, int level,bool isGordo=0,int id=-1);
     ~Enemy();
     void update();
-    void setDead(bool dead);
     void respawn();
     bool isDead(){return isdead;}
     QPointF getRespawn(){QPointF spawn(spaw_x,spaw_y); return spawn;}
     int getType()const{return type;}
     void Attk();//attack movement
+    void setDead(bool dead);
+    void instantDead();
+    void moveDead();
 private:
     double spaw_x, spaw_y;
     int turning_x, turning_y;
-    bool isdead = false;
 
+
+    bool isdead = false;
+    bool isdying= 0;
+    int dead_frame=0;
     double temp_x,temp_y;
     bool isYWeird();
     void handelCollisionY();
@@ -74,6 +80,11 @@ private:
 
     //the attk interval
     int attk_timer=180;// 3s
+
+
+    //debug
+    QGraphicsRectItem* debugFireRect=nullptr;
+
 };
 
 #endif // ENEMY_H
