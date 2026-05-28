@@ -5,6 +5,11 @@
 #include "projectile.h"
 #include <QList>
 
+
+enum kir_distance{
+    far=1, near
+};
+
 class Enemy : public GameObject
 {
 public:
@@ -32,6 +37,9 @@ private:
     bool isYWeird();
     void handelCollisionY();
 
+    //Player far:1 near:2
+
+    kir_distance kirby_pos=far;
     bool isPlayerNear();
 
     //enemy type
@@ -81,9 +89,14 @@ private:
     //the attk interval
     int attk_timer=180;// 3s
 
+    //Photo Preload ai told me to do this, probably not gonna see any where else in my code
+    QPixmap fire1, fire2_R, fire2_L, fire3_R, fire3_L;
+    QGraphicsPixmapItem* fire =nullptr;
 
     //debug
-    QGraphicsRectItem* debugFireRect=nullptr;
+    QGraphicsRectItem* debugFarRect=nullptr;
+    QGraphicsRectItem* debugFar2Rect=nullptr;
+    QGraphicsRectItem* debugNearRect=nullptr;
 
 };
 

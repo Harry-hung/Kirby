@@ -7,6 +7,7 @@ Enemy::Enemy(QString img_path, QGraphicsScene* main_scene
 
              ):GameObject(img_path,main_scene)
 {
+
     id=scene_id;
     scene = main_scene;
     spaw_x = spawnPoint_x; spaw_y = spawnPoint_y;
@@ -44,6 +45,14 @@ Enemy::Enemy(QString img_path, QGraphicsScene* main_scene
     else setData(1,"halable");
     setImg();
 
+    if(type==Hot_Head){
+        fire1.load(":/Image/Hot_Head/Hot_head_fire(1).png");
+        fire2_L.load(":/Image/Hot_Head/Hot_head_fire(2)_L.png");
+        fire2_R.load(":/Image/Hot_Head/Hot_head_fire(2)_R.png");
+        fire3_L.load(":/Image/Hot_Head/Hot_head_fire(3)_L.png");
+        fire3_R.load(":/Image/Hot_Head/Hot_head_fire(3)_R.png");
+    }
+
 
 }
 QList<int> Enemy::types={-1};
@@ -66,11 +75,17 @@ void Enemy::update(){
         }
         else {
             if(type==Hot_Head){
-                if(attk_timer>=180&&isPlayerNear())
+
+                if(attk_timer>=180)
                 {
-                    frame=0;
-                    attk_timer=0; isAttacking=1;
-                }else if(isAttacking)Attk();
+
+                    if(isPlayerNear()){
+                        frame=0;
+                        attk_timer=0;
+                        isAttacking=1;
+                    }
+                }
+                if(isAttacking){Attk();}
                 else
                 {
                     attk_timer++;
@@ -468,41 +483,73 @@ void Enemy::respawn(){
     setData(0,"Enemy");
     setVisible(true);
     isdead=false;
+    isdying=0;
+    dead_frame=0;
+    isAttacking=0;
+    frame=0;
+    attk_timer=0;
     setPos(spaw_x,spaw_y);
     turning_x = spaw_x;
 }
 
 //i think its only for hot heed
 bool Enemy::isPlayerNear(){
-    QRectF fireZone;
-    if (facing == right)
-    {
-        fireZone = QRectF(x()-500+pixmap().width()/2 , y(), 1000, pixmap().height());
+    QRectF farZone;
+    QRectF farZone2;
+    QRectF nearZone;
 
-    } else {
-        fireZone = QRectF(x()-500+pixmap().width()/2 , y(), 1000, pixmap().height());
-    }
+        nearZone = QRectF(x()-250+pixmap().width()/2 , y(), 500, pixmap().height());
 
-    QList<QGraphicsItem*> items_in_zone = scene->items(fireZone);
-    for(QGraphicsItem* item : items_in_zone)
+        farZone = QRectF(x()-500+pixmap().width()/2 , y(), 250, pixmap().height());
+        farZone2= QRectF(x()+250+pixmap().width()/2 , y(), 250, pixmap().height());
+
+    QList<QGraphicsItem*> items_in_farzone = scene->items(farZone);
+    items_in_farzone.append(scene->items(farZone2));
+    QList<QGraphicsItem*> items_in_nearzone = scene->items(nearZone);
+
+    for(QGraphicsItem* item : items_in_nearzone)
     {
         if(item->data(0)=="Player")
         {
-            if(attk_timer>=178)
+            if(attk_timer>=178){
+                kirby_pos=near;
                 facing=(item->x()>=x())?right:left;
+            }
             return true;
         }
     }
-    /*if (!debugFireRect) {
+
+    for(QGraphicsItem* item : items_in_farzone)
+    {
+        if(item->data(0)=="Player")
+        {
+            if(attk_timer>=178){
+                kirby_pos=far;
+                facing=(item->x()>=x())?right:left;
+            }
+            return true;
+        }
+    }
+   /* if (!debugFarRect||!debugFar2Rect||!debugNearRect) {
                         // 如果方框還沒被建立，就建立一個紅色的空心方框 (線條粗細為 2)
                         QPen redPen(Qt::red, 2);
-                        debugFireRect = scene->addRect(fireZone, redPen);
-                        debugFireRect->setZValue(10); // 確保這個除錯框會蓋在角色和地圖最上層
+                        QPen bluePen(Qt::blue,2);
+                        debugNearRect = scene->addRect(nearZone, bluePen);
+                        debugNearRect->setZValue(10);
+                        debugFar2Rect = scene->addRect(farZone2, redPen);
+                        debugFar2Rect->setZValue(10);
+                        debugFarRect = scene->addRect(farZone, redPen);
+                        debugFarRect->setZValue(10); // 確保這個除錯框會蓋在角色和地圖最上層
                     } else {
                         // 如果方框已經存在，就更新它的位置與大小，並確保它是顯示狀態
-                        debugFireRect->setRect(fireZone);
-                        debugFireRect->setVisible(true);}*/
-    return false;
+                        debugFarRect->setRect(farZone);
+                        debugFarRect->setVisible(true);
+                        debugFar2Rect->setRect(farZone2);
+                        debugFar2Rect->setVisible(true);
+                        debugNearRect->setRect(nearZone);
+                        debugNearRect->setVisible(true);
+    }*/
+    return 0;
 
 }
 
@@ -513,17 +560,58 @@ bool Enemy::isPlayerNear(){
 
 void Enemy::Attk()
 {
+
     frame++;
     switch (type) {
         case Hot_Head:
-            if(frame==1){
-                setPixmap(QPixmap((facing==left)?":/Image/Hot_Head/Hot_head_attack_L.png":":/Image/Hot_Head/Hot_head_attack_R.png"));
+            if(kirby_pos==far){
+                if(frame==1){
+                    setPixmap(QPixmap((facing==left)?":/Image/Hot_Head/Hot_head_attack_L.png":":/Image/Hot_Head/Hot_head_attack_R.png"));
+                    int dx=0;
+                    dx=(facing==right)?50:-10;
+                    scene->addItem(new Projectile(scene,x()+dx,y()+50,"Player",facing,"Fireball"));
+                }else if(frame>img_frame){
+                    attk_timer=0;frame=0;isAttacking=0;
+                }
+            }else if(kirby_pos==near){
                 int dx=0;
-                dx=(facing==right)?50:-10;
-                scene->addItem(new Projectile(scene,x()+dx,y()+50,"Player",facing,"Fireball"));
-            }else if(frame>img_frame){
-                attk_timer=0;frame=0;isAttacking=0;
+                if(facing==right)dx=50; else dx=-10;
+
+                if(frame==1){
+                    qDebug()<<"frame1";
+                    if(fire!=nullptr){
+                        scene->removeItem(fire);
+                        delete fire;
+                    }
+                    fire = new QGraphicsPixmapItem(fire1);
+                    scene->addItem(fire);
+                    fire->setPos(x()+dx,y()+50);
+                    fire->setData(0,"Fire");
+                    fire->setZValue(3);
+                    setPixmap(QPixmap((facing==left)?":/Image/Hot_Head/Hot_head_attack_L.png":":/Image/Hot_Head/Hot_head_attack_R.png"));
+                }else if(fire!=nullptr){
+                    if((frame%4)/2==0){
+                        qDebug()<<"frame2";
+                        fire->setPixmap((facing==right)?fire2_R:fire2_L);
+                        dx=(facing==right)?50:-(fire->pixmap().width());
+                        fire->setPos(x()+dx,y()+50);
+                    }else if((frame%4)/2==1){
+                        fire->setPixmap((facing==right)?fire3_R:fire3_L);
+                        dx=(facing==right)?50:-(fire->pixmap().width());
+                        fire->setPos(x()+dx,y()+50);
+                    }
+                    if(frame>img_frame*3){
+                        attk_timer=0;frame=0;isAttacking=0;
+                    }
+                }
             }
+
+            if(!isAttacking&&fire!=nullptr){
+                scene->removeItem(fire);
+                delete fire;
+                fire=nullptr;
+            }
+
 
         break;
         case Sparky:
@@ -546,6 +634,7 @@ void Enemy::Attk()
     default://other than Sparky&HotHeed
         break;
     }
+
 }
 
 void Enemy::moveDead()

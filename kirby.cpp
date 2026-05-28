@@ -975,8 +975,8 @@ bool Kirby::isNextScene(){
 
 bool Kirby::isEnemy(Enemy** output_ememy){
     QList<QGraphicsItem*> items_hit = scene-> collidingItems(this);
-    for(QGraphicsItem* item : items_hit)
-        if(item->data(0)=="Enemy"||item->data(0)=="Fireball")
+    for(QGraphicsItem* item : items_hit){
+        if(item->data(0)=="Enemy")
         {
             Enemy* eney = dynamic_cast<Enemy*>(item);
             if(output_ememy!=nullptr){
@@ -987,6 +987,14 @@ bool Kirby::isEnemy(Enemy** output_ememy){
                 return true;
 
         }
+
+        if(item->data(0)=="Fireball"){
+            return true;
+        }
+        if(item->data(0)=="Fire"){
+            return true;
+        }
+    }
     return false;
 }
 
@@ -994,7 +1002,7 @@ void Kirby::handelEnemyinHitbox(QRectF box){
     QList<QGraphicsItem*>itemsinbox=scene->items(box);
     for(QGraphicsItem* item : itemsinbox)
     {
-        if(item->data(0)=="Enemy"||item->data(0)=="Fireball")
+        if(item->data(0)=="Enemy"||item->data(0)=="Fireball"||item->data(0)=="Fire")
         {
             move=move_ground;
             hp--;
