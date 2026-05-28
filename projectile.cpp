@@ -70,6 +70,7 @@ bool Projectile::hit()
             {
                 Enemy* enemy = dynamic_cast<Enemy*>(item);
                 if(item->data(1)!="Inhalable") enemy->setDead(true);//Not Gordo
+                return true;
             }
             return true;
         }

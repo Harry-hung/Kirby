@@ -2,7 +2,7 @@
 #include<iostream>
 Kirby::Kirby(QString path, QGraphicsScene *Scene,double spw_x, double spw_y):GameObject(path, Scene)
 {
-    setZValue(1);
+    setZValue(3);
     setData(0,"Player");
     state =state_normal;
     move = move_ground;
@@ -134,19 +134,25 @@ void Kirby::updateMovement(int speed){
             }
         if(isUp_keyPressed&&state!=state_full){
             moveUp();
-            if(isGrounded&&!isAir){
+            if(isGrounded&&!isAir&&state!=state_fire&&state!=state_spark){
                 Up_frames=0;
                 move=move_jump;
                 vy = jump_speed;
                 isGrounded=0;
                 Uptime=1;
-            }else if(Uptime==0){
+            }else if(Uptime==0||state==state_fire||state==state_spark){
                 isAir=1;
                 if(state!=state_spark&&state!=state_fire)
                     state=state_air;
                 move=move_flying;
-                vy = flying_speed;
-                Uptime=1;
+
+                if(y()>-70){
+                    Uptime=1;
+
+                    if(state==state_fire||state==state_spark)
+                        vy = flying_speed*0.85;
+                    else vy = flying_speed;
+                }
             }
         }else Uptime=0;
 
@@ -166,7 +172,11 @@ void Kirby::updateMovement(int speed){
 
     }
 
+
+
     handleCollisionY();
+
+
 
     if(!(isRight_keyPressed||isLeft_keyPressed||isUp_keyPressed||isDown_keyPressed)&&isGrounded)
     {
@@ -212,7 +222,7 @@ void Kirby::moveLeft(int speed){
             setPixmap(QPixmap(":/Image/Kirby_normal/kirby_run_3_L.png"));
             Left_frames++;
         } else Left_frames = 0;
-    }else if(isAir && move==move_ground){
+    }else if(isAir){
         setOffset(0,0);
         if(state==state_air){
             if(Left_frames < image_frame){
@@ -244,33 +254,33 @@ void Kirby::moveLeft(int speed){
     }else if(state==state_full)
     {
         if(Left_frames < image_frame){
-            setOffset(0,-15);
+            setOffset(0,-30);
             setPixmap(QPixmap(":/Image/Kirby_normal/kirby_full_run_L.png").scaledToHeight(173));
             Left_frames++;
         }else if(Left_frames < image_frame *2){
-            setOffset(0,-15);
+            setOffset(0,-30);
             setPixmap(QPixmap(":/Image/Kirby_normal/kirby_full_run(2)_L.png").scaledToHeight(173));
             Left_frames++;
         }else Left_frames = 0;
     }else if(state==state_fire)
     {
         if(Left_frames < image_frame){
-            setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_run(1)_L.png"));
+            setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_run(1)_L.png").scaledToHeight(173));
             Left_frames++;
         }else if(Left_frames < image_frame *2){
-            setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_run(2)_L.png"));
+            setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_run(2)_L.png").scaledToHeight(173));
             Left_frames++;
         }else if(Left_frames < image_frame *3){
-            setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_run(3)_L.png"));
+            setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_run(3)_L.png").scaledToHeight(173));
             Left_frames++;
         }else Left_frames = 0;
     }else if(state==state_spark)
     {
         if(Left_frames < image_frame){
-            setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_run(1)_L.png"));
+            setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_run(1)_L.png").scaledToHeight(173));
             Left_frames++;
         }else if(Left_frames < image_frame *2){
-            setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_run(2)_L.png"));
+            setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_run(2)_L.png").scaledToHeight(173));
             Left_frames++;
         }else Left_frames = 0;
     }
@@ -294,8 +304,8 @@ void Kirby::moveRight(int speed){
                 Right_frames++;
             }else Right_frames = 0;
 
-    }else if(isAir&&move == move_ground){
-        if(state==state_normal){
+    }else if(isAir){
+        if(state==state_air){
             if(Right_frames < image_frame){
                 setPixmap(QPixmap(":/Image/Kirby_normal/kirby_fly_1_R.png"));
                 Right_frames++;
@@ -324,11 +334,11 @@ void Kirby::moveRight(int speed){
     else if(state==state_full)
         {
             if(Right_frames < image_frame){
-                setOffset(0,-15);
+                setOffset(0,-30);
                 setPixmap(QPixmap(":/Image/Kirby_normal/kirby_full_run_R.png").scaledToHeight(173));
                 Right_frames++;
             }else if(Right_frames < image_frame *2){
-                setOffset(0,-15);
+                setOffset(0,-30);
                 setPixmap(QPixmap(":/Image/Kirby_normal/kirby_full_run(2)_R.png").scaledToHeight(173));
                 Right_frames++;
             }else Right_frames = 0;
@@ -336,23 +346,23 @@ void Kirby::moveRight(int speed){
     else if(state==state_fire)
         {
             if(Right_frames < image_frame){
-                setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_run(1)_R.png"));
+                setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_run(1)_R.png").scaledToHeight(173));
                 Right_frames++;
             }else if(Right_frames < image_frame *2){
-                setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_run(2)_R.png"));
+                setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_run(2)_R.png").scaledToHeight(173));
                 Right_frames++;
             }else if(Right_frames < image_frame *3){
-                setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_run(3)_R.png"));
+                setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_run(3)_R.png").scaledToHeight(173));
                 Right_frames++;
             }else Right_frames = 0;
         }
     else if(state==state_spark)
         {
             if(Right_frames < image_frame){
-                setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_run(1)_R.png"));
+                setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_run(1)_R.png").scaledToHeight(173));
                 Right_frames++;
             }else if(Right_frames < image_frame *2){
-                setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_run(2)_R.png"));
+                setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_run(2)_R.png").scaledToHeight(173));
                 Right_frames++;
             }else Right_frames = 0;
         }
@@ -363,22 +373,30 @@ void Kirby::moveUp(){
     if(move == move_flying){//flying animation
         isAir=1;
     if(isAir){
+
         if(facing==right){
             if(Up_frames<image_frame){
                 if(state==state_air)
                     setPixmap(QPixmap(":/Image/Kirby_normal/kirby_fly_1_R.png"));
-                else if(state==state_fire)
+                else if(state==state_fire){
+
                     setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_fly(1)_R.png"));
-                else if(state_spark)
+                }
+                else if(state_spark){
+
                     setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_fly(1)_R.png"));
+                }
                 Up_frames++;
             }else if(Up_frames<2*image_frame){
                 if(state==state_air)
                     setPixmap(QPixmap(":/Image/Kirby_normal/kirby_fly_2_R.png"));
-                else if(state==state_fire)
+                else if(state==state_fire){
+
                     setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_fly(2)_R.png"));
-                else if(state_spark)
+                }else if(state_spark){
+
                     setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_fly(2)_R.png"));
+                }
                 Up_frames++;
                 if(Up_frames==2*image_frame)
                     Up_frames=0;
@@ -387,18 +405,24 @@ void Kirby::moveUp(){
             if(Up_frames<image_frame){
                 if(state==state_air)
                     setPixmap(QPixmap(":/Image/Kirby_normal/kirby_fly_1_L.png"));
-                else if(state==state_fire)
+                else if(state==state_fire){
+
                     setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_fly(1)_L.png"));
-                else if(state_spark)
+                }else if(state_spark){
+
                     setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_fly(1)_L.png"));
+                }
                 Up_frames++;
             }else if(Up_frames<2*image_frame){
                 if(state==state_air)
                     setPixmap(QPixmap(":/Image/Kirby_normal/kirby_fly_2_L.png"));
-                else if(state==state_fire)
+                else if(state==state_fire){
+
                     setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_fly(2)_L.png"));
-                else if(state_spark)
+                }else if(state_spark){
+
                     setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_fly(2)_L.png"));
+                }
                 Up_frames++;
                 if(Up_frames==2*image_frame)Up_frames=0;
                 }
@@ -422,7 +446,7 @@ void Kirby::moveUp(){
 }
 
 void Kirby::moveDown(){
-
+setOffset(0,0);
         if(state==state_full){
             setOffset(0,0);
             if(enemy_type==Sparky) state=state_spark;
@@ -520,7 +544,7 @@ void Kirby::moveInhale()
                     state=state_full;
 
                     enemy_type=enemy->getType();
-                    setOffset(0,-50);
+                    setY(y()-130);
                     setPixmap(QPixmap((facing==right)?":/Image/Kirby_normal/kirby_full_stop_R.png":":/Image/Kirby_normal/kirby_full_stop_L.png").scaledToHeight(180));
                     return;
                     //isXreleasedAfterPress=0;
@@ -600,25 +624,25 @@ void Kirby::moveAttack(){
 
             switch (facing){
             case left:
-                    setPixmap(QPixmap(":/Image/Kirby_fire/fire_ha_L.png"));
+                    setPixmap(QPixmap(":/Image/Kirby_fire/fire_ha_L.png").scaledToHeight(220));
                     if(Attk_frames<2){
-                        scene->addItem(new Projectile(scene,x()-50,y()+10,"Enemy",facing,"Gas"));
+                        scene->addItem(new Projectile(scene,x()-50,y()+50,"Enemy",facing,"Gas"));
                         Attk_frames++;
                     }else if(Attk_frames<15){
                         Attk_frames++;
                     }else { Attk_frames=0;move=move_ground;isAir=0;
-                        setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_stop_L.png"));
+                        setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_stop_L.png").scaledToHeight(173));
                     }
                         break;
             case right:
-                    setPixmap(QPixmap(":/Image/Kirby_fire/fire_ha_R.png"));
+                    setPixmap(QPixmap(":/Image/Kirby_fire/fire_ha_R.png").scaledToHeight(220));
                     if(Attk_frames<2){
-                        scene->addItem(new Projectile(scene,x()+50,y()+10,"Enemy",facing,"Gas"));
+                        scene->addItem(new Projectile(scene,x()+50,y()+50,"Enemy",facing,"Gas"));
                         Attk_frames++;
                     }else if(Attk_frames<15){
                         Attk_frames++;
                     }else { Attk_frames=0;move=move_ground;isAir=0;
-                        setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_stop_R.png"));
+                        setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_stop_R.png").scaledToHeight(173));
                     }
                         break;
                 break;
@@ -627,29 +651,33 @@ void Kirby::moveAttack(){
 
         else if(isGrounded)
         {
+            double fire_height=250;
+
             switch (facing){
             case left:
+                    setOffset(-220,-50);
                     if(Attk_frames<image_frame){
                         Attk_frames++;
-                        setPixmap(QPixmap(":/Image/Kirby_fire/kirby_fire_attk(2)_L.png"));
+                        setPixmap(QPixmap(":/Image/Kirby_fire/kirby_fire_attk(2)_L.png").scaledToHeight(fire_height));
                     }else if(Attk_frames<image_frame*2){
-                        setPixmap(QPixmap(":/Image/Kirby_fire/kirby_fire_attack_L.png"));
+                        setPixmap(QPixmap(":/Image/Kirby_fire/kirby_fire_attack_L.png").scaledToHeight(fire_height));
                         Attk_frames++;
                     }else if(Attk_frames<image_frame*3){
-                        setPixmap(QPixmap(":/Image/Kirby_fire/kirby_fire_attk(3)_L.png"));
+                        setPixmap(QPixmap(":/Image/Kirby_fire/kirby_fire_attk(3)_L.png").scaledToHeight(fire_height));
                         Attk_frames++;
                     }else{ Attk_frames=0;}
                         break;
             case right:
+                    setOffset(0,-50);
                     if(Attk_frames<image_frame){
                         Attk_frames++;
-                        setPixmap(QPixmap(":/Image/Kirby_fire/kirby_fire_attk(2)_R.png"));
+                        setPixmap(QPixmap(":/Image/Kirby_fire/kirby_fire_attk(2)_R.png").scaledToHeight(fire_height));
                     }else if(Attk_frames<image_frame*2){
                         Attk_frames++;
-                        setPixmap(QPixmap(":/Image/Kirby_fire/kirby_fire_attack_R.png"));
+                        setPixmap(QPixmap(":/Image/Kirby_fire/kirby_fire_attack_R.png").scaledToHeight(fire_height));
                     }else if(Attk_frames<image_frame*3){
                         Attk_frames++;
-                        setPixmap(QPixmap(":/Image/Kirby_fire/kirby_fire_attk(3)_R.png"));
+                        setPixmap(QPixmap(":/Image/Kirby_fire/kirby_fire_attk(3)_R.png").scaledToHeight(fire_height));
                     }else Attk_frames=0;
                         break;
                 break;
@@ -660,69 +688,74 @@ void Kirby::moveAttack(){
         if(isAir)
         {
             Uptime=0;
-
+            setOffset(0,0);
             switch (facing){
             case left:
-                    setPixmap(QPixmap(":/Image/Kirby_spark/kirby_sparky_ha_L.png"));
+                    setPixmap(QPixmap(":/Image/Kirby_spark/kirby_sparky_ha_L.png").scaledToHeight(220));
                     if(Attk_frames<2){
-                        scene->addItem(new Projectile(scene,x()-50,y()+10,"Enemy",facing,"Gas"));
+                        scene->addItem(new Projectile(scene,x()-50,y()+70,"Enemy",facing,"Gas"));
                         Attk_frames++;
                     }else if(Attk_frames<15){
                         Attk_frames++;
                     }else { Attk_frames=0;move=move_ground; isAir=0;
-                        setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_stop_L.png"));
+                        setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_stop_L.png").scaledToHeight(173));
                     }
                         break;
             case right:
-                    setPixmap(QPixmap(":/Image/Kirby_spark/kirby_sparky_ha_R.png"));
+                    setPixmap(QPixmap(":/Image/Kirby_spark/kirby_sparky_ha_R.png").scaledToHeight(220));
                     if(Attk_frames<2){
-                        scene->addItem(new Projectile(scene,x()+50,y()+10,"Enemy",facing,"Gas"));
+                        scene->addItem(new Projectile(scene,x()+100,y()+70,"Enemy",facing,"Gas"));
                         Attk_frames++;
                     }else if(Attk_frames<15){
                         Attk_frames++;
                     }else { Attk_frames=0;move=move_ground;isAir=0;
-                        setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_stop_R.png"));
+                        setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_stop_R.png").scaledToHeight(173));
                     }
                         break;
                 break;
             }
         }else if(isGrounded)
         {
-            if(Attk_frames<image_frame)
+            if(Attk_frames<2)
             {
-                setPixmap(QPixmap(":/Image/Kirby_spark/kirby_spark_attack.png"));
+                setOffset(0,0);
+                setPixmap(QPixmap(":/Image/Kirby_spark/kirby_spark_attack.png").scaledToHeight(340));
                 Attk_frames++;
-            }else if(Attk_frames<image_frame*2){
-                setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_attack(2).png"));
+            }else if((Attk_frames%10)/4==0){
+                setOffset(-70,-70);
+                setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_attack(2).png").scaledToHeight(340));
                 Attk_frames++;
-            }else if(Attk_frames<image_frame*3){
-                setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_attack(3).png"));
+            }else if((Attk_frames%10)/4==1){
+                setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_attack(3).png").scaledToHeight(340));
                 Attk_frames++;
-            }else if(Attk_frames<image_frame*4){
-                setPixmap(QPixmap(":/Image/Kirby_spark/kirby_spark_attack(4).png"));
+            }else if((Attk_frames%10)/4==2){
+                setPixmap(QPixmap(":/Image/Kirby_spark/kirby_spark_attack(4).png").scaledToHeight(340));
                 Attk_frames++;
-            }else if(Attk_frames<image_frame*5){
-                setPixmap(QPixmap(":/Image/Kirby_spark/kirby_spark_attack(5).png"));
+            }else if((Attk_frames%10)/4==3){
+                setPixmap(QPixmap(":/Image/Kirby_spark/kirby_spark_attack(5).png").scaledToHeight(340));
                 Attk_frames++;
             }else{ Attk_frames=0;}
         }
     break;
     case state_full:
+
     switch(facing){
         case left:
                 setPixmap(QPixmap(":/Image/Kirby_normal/kirby_attack_L.png"));
-                if(Attk_frames<2){
+                if(Attk_frames==0){
+                   // std::cout<<"一千億個星星";
                     scene->addItem(new Projectile(scene,x()-50,y()+10,"Enemy",facing,"Star"));
                     Attk_frames++;
                 }else if(Attk_frames<image_frame*1.2){
                     Attk_frames++;
-                }else { Attk_frames=0;move=move_ground;state=state_normal;std::cout<<"here"<<std::endl;
+                }else { Attk_frames=0;move=move_ground;state=state_normal;//std::cout<<"here"<<std::endl;
                     setPixmap(QPixmap(":/Image/Kirby_normal/kirby_stop_L.png"));
                 }
         break;
         case right:
                 setPixmap(QPixmap(":/Image/Kirby_normal/kirby_attack_R.png"));
-                if(Attk_frames<2){
+                if(Attk_frames==0){
+                   // std::cout<<"一千億個星星";
                     scene->addItem(new Projectile(scene,x()+50,y()+10,"Enemy",facing,"Star"));
                     Attk_frames++;
                 }else if(Attk_frames<image_frame*1.2){

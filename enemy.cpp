@@ -482,10 +482,14 @@ void Enemy::Attk()
             if(frame<img_frame){
                 setOffset(0,-10);
                 setPixmap(QPixmap(":/Image/Sparky/Sparky_attack_1.png").scaled(128,128,Qt::KeepAspectRatio));
-            }else if(frame<img_frame*6){
+            }else if((frame%8)/2==0){
                 setOffset(-108,-108);
                 setPixmap(QPixmap(":/Image/Sparky/Sparky_attack_2.png").scaled(342,342,Qt::KeepAspectRatio));
-            }else {
+            }else if(frame<img_frame*6)
+            {
+                setOffset(-108,-108);
+                setPixmap(QPixmap(":/Image/Sparky/sparky_attk(3).png").scaled(342,342,Qt::KeepAspectRatio));
+            }else{
                 setOffset(0,0);
                 setPixmap(QPixmap((facing==right)?":/Image/Sparky/Sparky_ritht_1.png":":/Image/Sparky/Sparky_left_1.png").scaled(148,148,Qt::KeepAspectRatio));
                 attk_timer=0;frame=0;isAttacking=0;

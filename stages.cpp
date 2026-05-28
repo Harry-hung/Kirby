@@ -4,7 +4,7 @@ Stages::Stages(QString path, QGraphicsScene *scene,int x, int y) : GameObject(pa
 {
 
     setData(0,"Solid");
-    setZValue(4);
+    setZValue(2);
     setPos(x,y);
 
 }
