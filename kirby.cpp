@@ -58,7 +58,7 @@ void Kirby::updateMovement(int speed){
 //attack & inhale
     if(isXPressed)
     {
-        if(isXrelease){
+        if(isXrelease&&hurt_frames>30){
             if(state!=state_normal){
                 move=move_attacking;
             }else if(isGrounded){
@@ -97,12 +97,13 @@ void Kirby::updateMovement(int speed){
 
 
 //enemy collision
-    if(isEnemy()&&move!=move_attacking&&hurt_frames==120)
+    if(move!=move_attacking&&hurt_frames==120&&isEnemy())
     {
         handelCollideEnemy();
 
     }
-    //hurt animation
+
+//hurt animation
     if(hurt_frames<120)
     {
         moveHurt();
@@ -944,12 +945,15 @@ void Kirby::handelCollideEnemy(){
     hurt_frames=0;
     QList<QGraphicsItem*> enemys= scene->collidingItems(this);
     for(QGraphicsItem* item : enemys){
-        if(item->data(0)=="Enemy"||item->data(0)=="Fireball"){
+        if(item->data(0)=="Enemy"||item->data(0)=="Fireball"||item->data(0)=="Fire"){
+        if(item->data(0)=="Fireball")
+            qDebug()<<"Fireball";
             if(item->x() > x())
             {
                 vx=-knockback_sped;
             }else
                 vx=knockback_sped;
+
             vy=knockup_sped;
             return ;
         }
@@ -976,23 +980,23 @@ bool Kirby::isNextScene(){
 bool Kirby::isEnemy(Enemy** output_ememy){
     QList<QGraphicsItem*> items_hit = scene-> collidingItems(this);
     for(QGraphicsItem* item : items_hit){
-        if(item->data(0)=="Enemy")
+        if(item->data(0)=="Enemy"||item->data(0)=="Fireball"||item->data(0)=="Fire")
         {
-            Enemy* eney = dynamic_cast<Enemy*>(item);
-            if(output_ememy!=nullptr){
-                *output_ememy=eney;
-                if((*output_ememy)->getType()!=1)//type!=Gordo
-                    (*output_ememy)->setDead(true);
+
+            if(item->data(0)=="Enemy"){
+                Enemy* eney = dynamic_cast<Enemy*>(item);
+                if(output_ememy!=nullptr){
+                    *output_ememy=eney;
+                    if((*output_ememy)->getType()!=1)//type!=Gordo
+                        (*output_ememy)->setDead(true);
+                }
+            }
+            if(item->data(0)=="Fireball"){
+                Projectile* pro=dynamic_cast<Projectile*>(item);
+                pro->self_destroy();
             }
                 return true;
 
-        }
-
-        if(item->data(0)=="Fireball"){
-            return true;
-        }
-        if(item->data(0)=="Fire"){
-            return true;
         }
     }
     return false;
@@ -1014,16 +1018,24 @@ void Kirby::handelEnemyinHitbox(QRectF box){
                 Enemy* ene = dynamic_cast<Enemy*>(item);
                 ene->setDead(true);
             }
+
             if(item->x() > x())
             {
                 vx=-knockback_sped;
             }else
                 vx=knockback_sped;
             vy=knockup_sped;
+
+            if(item->data(0)=="Fireball"){
+                Projectile* pro=dynamic_cast<Projectile*>(item);
+                pro->self_destroy();
+            }
             return ;
         }
     }
     return;
 }
+
+
 
 

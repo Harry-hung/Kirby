@@ -3,6 +3,7 @@
 
 #include "gameobject.h"
 #include "enemy.h"
+#include "kirby.h"
 #include <cmath>
 class Projectile : public GameObject
 {

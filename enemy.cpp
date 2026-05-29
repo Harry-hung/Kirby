@@ -88,7 +88,7 @@ void Enemy::update(){
                 if(isAttacking){Attk();}
                 else
                 {
-                    attk_timer++;
+                    attk_timer=(attk_timer>=180)?180:attk_timer+1;
                     movement();
                     temp_y=y();
                     Turn();
@@ -575,30 +575,32 @@ void Enemy::Attk()
                 }
             }else if(kirby_pos==near){
                 int dx=0;
-                if(facing==right)dx=50; else dx=-10;
 
                 if(frame==1){
-                    qDebug()<<"frame1";
                     if(fire!=nullptr){
                         scene->removeItem(fire);
                         delete fire;
                     }
                     fire = new QGraphicsPixmapItem(fire1);
                     scene->addItem(fire);
+                    if(facing==right)dx=50; else dx=-10;
                     fire->setPos(x()+dx,y()+50);
                     fire->setData(0,"Fire");
                     fire->setZValue(3);
                     setPixmap(QPixmap((facing==left)?":/Image/Hot_Head/Hot_head_attack_L.png":":/Image/Hot_Head/Hot_head_attack_R.png"));
                 }else if(fire!=nullptr){
-                    if((frame%4)/2==0){
-                        qDebug()<<"frame2";
+                    if(frame<10){
+                        fire->setPixmap(fire1);
+                        if(facing==right)dx=50; else dx=-10;
+                        fire->setPos(x()+dx,y()+50);
+                    }else if((frame%10)/2==0){
                         fire->setPixmap((facing==right)?fire2_R:fire2_L);
-                        dx=(facing==right)?50:-(fire->pixmap().width());
-                        fire->setPos(x()+dx,y()+50);
-                    }else if((frame%4)/2==1){
+                        dx=(facing==right)?200:-(fire->pixmap().width());
+                        fire->setPos(x()+dx,y());
+                    }else if((frame%10)/2==1){
                         fire->setPixmap((facing==right)?fire3_R:fire3_L);
-                        dx=(facing==right)?50:-(fire->pixmap().width());
-                        fire->setPos(x()+dx,y()+50);
+                        dx=(facing==right)?200:-(fire->pixmap().width());
+                        fire->setPos(x()+dx,y());
                     }
                     if(frame>img_frame*3){
                         attk_timer=0;frame=0;isAttacking=0;

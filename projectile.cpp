@@ -17,8 +17,8 @@ Projectile::Projectile(QGraphicsScene* game_scene,
 QPainterPath Projectile::shape() const
 {
     QPainterPath path;
-
-    path.addRect(15,15, pixmap().width()-30, pixmap().height()-30);
+    if(type=="Fireball") path.addRect(10,10, pixmap().width()-20, pixmap().height()-20);
+    else path.addRect(15,15, pixmap().width()-30, pixmap().height()-30);
 
     return path;
 }
@@ -42,6 +42,8 @@ void Projectile::update()
         Fireball();
     }else if(type=="Star")Star();
     else if(type=="Gas")Gas();
+
+
 }
 
 void Projectile::self_destroy()
@@ -64,14 +66,16 @@ bool Projectile::hit()
         {
             return true;
         }
-        if(item->data(0)==target)
+        if(item->data(0)=="Enemy"&&target=="Enemy")
         {
-            if(target=="Enemy")
-            {
                 Enemy* enemy = dynamic_cast<Enemy*>(item);
                 if(item->data(1)!="Inhalable") enemy->setDead(true);//Not Gordo
                 return true;
-            }
+
+        }
+        if(item->data(0)=="Player")
+        {
+            //Player hit is handel by player
         }
     }
     return false;
@@ -82,9 +86,9 @@ void Projectile::Star()
 {
     frame++;
     if(frame<15){
-        setPixmap(QPixmap((facing==right)?":/Image/Kirby_normal/star_R.png":":/Image/Kirby_normal/star_L.png").scaledToHeight(100));
+        setPixmap(QPixmap((facing==right)?":/Image/Kirby_normal/star_R.png":":/Image/Kirby_normal/star_L.png").scaledToHeight(130));
     }else if(frame<30){
-        setPixmap(QPixmap((facing==right)?":/Image/Kirby_normal/star(3)_R.png":":/Image/Kirby_normal/star(3)_L.png").scaledToHeight(100));
+        setPixmap(QPixmap((facing==right)?":/Image/Kirby_normal/star(3)_R.png":":/Image/Kirby_normal/star(3)_L.png").scaledToHeight(130));
     }else frame = 0;
 }
 

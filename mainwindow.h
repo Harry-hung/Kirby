@@ -59,10 +59,21 @@ public:
 
     void projUpdate();
 
+    void kirby_status();
+    void kirby_init();
+
 private slots:
     void gameUpdate();
 
 private:
+    QList<QLabel*> hearts;
+    QLabel* lives;
+    QLabel* lives_Label;//the number of remain lives
+
+    QLabel* state_Label;
+    const double state_img_height=200;
+    const double state_img_width =150;
+
     QGraphicsView *view;
     Ui::MainWindow *ui;
     QGraphicsScene *Scene;

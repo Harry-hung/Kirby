@@ -15,6 +15,7 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
     connect(gameTimer, &QTimer::timeout, this, &MainWindow::gameUpdate);
     gameTimer ->start(16);
+
 }
 
 MainWindow::~MainWindow()
@@ -26,6 +27,7 @@ void MainWindow::gameUpdate(){
     if(game_scene != scene_start&&game_scene!=scene_clear){
         //player movement
         if(player){
+            kirby_status();
             player ->updateMovement(4);
             QPointF playerPos_onScene = player->mapToScene(0,0);
             view->centerOn(playerPos_onScene.x()+50,540);
@@ -188,6 +190,7 @@ void MainWindow::switchScene(){
         Item_Default();
         loadTiledMap(":/scene_1.json");
         player->setY(player->y()-60);
+        kirby_init();
      player->setX(4800);
         setBG(":/Image/background/Background.jpg");
         break;
@@ -198,6 +201,7 @@ void MainWindow::switchScene(){
         Item_Default();
         loadTiledMap(":/scene_2.json");
        player->setX(5000);
+       kirby_init();
         setBG(":/Image/background/Background.jpg");
         break;
     case scene_clear:
@@ -208,7 +212,9 @@ void MainWindow::switchScene(){
         setBG(":/Image/background/Clear.png");
         break;
     case scene_over:
+        Scene->clear();
         Scene->setSceneRect(0,0,1620,1080);
+        Item_Default();
         setBG(":/Image/background/game_over_continue.png");
         break;
     }
@@ -386,6 +392,60 @@ void MainWindow::projUpdate()
     }
 }
 
+void MainWindow::kirby_status(){
+
+    lives_Label->show();
+
+    lives->setPixmap(QPixmap(":/Image/item/life.png"));
+    lives->show();
+    for(int i=0;i<player->max_hp;i++)
+    {
+        hearts[i]->show();
+        if(i<player->hp){
+            hearts[i]->setPixmap(QPixmap(":/Image/item/HP_1.png"));
+        }else hearts[i]->setPixmap(QPixmap(":/Image/item/HP_0.png"));
+    }
+
+    if(player->getState()==state_spark){
+        state_Label->show();
+        state_Label->setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_board.png").scaled(state_img_width,state_img_height));
+    }else if(player->getState()==state_fire){
+        state_Label->show();
+        state_Label->setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_board.png").scaled(state_img_width,state_img_height));
+    }else {
+        state_Label->hide();
+    }
+}
+
+void MainWindow::kirby_init(){
+    double startX =500;
+    double startY = 900;
+
+
+    for (int i = 0; i < player->max_hp; ++i) {
+            QLabel* heart = new QLabel(this);
+            heart->hide();
+            heart->setGeometry(startX +500+ i * 60, startY, 50, 100);
+            heart->setScaledContents(true);
+            hearts.append(heart);
+        }
+
+        // 順便初始化命數和能力狀態的文字位置
+        lives_Label = new QLabel(this);
+        lives_Label->hide();
+        lives_Label->setGeometry(startX+500, startY, 100, 50);
+        lives_Label->setStyleSheet("color: white; font-size: 18px; font-weight: bold;");
+
+        lives = new QLabel(this);
+        lives->hide();
+        lives->setGeometry(startX-100+400, startY+50,50,50);
+        lives->setScaledContents(true);
+
+
+        state_Label = new QLabel(this);
+        state_Label->hide();
+        state_Label->setGeometry(startX-200, startY-150, state_img_width, state_img_height);
+}
 
 
 

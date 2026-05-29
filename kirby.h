@@ -8,6 +8,12 @@
 #include <cmath>
 //Special class of gameObject: player
 
+enum kir_state{
+    state_air,
+    state_full, state_fire,
+    state_spark, state_normal
+};
+
 class Kirby : public GameObject
 {
 public:
@@ -21,14 +27,18 @@ public:
     void updateMovement(int speed);
     bool isNextScene();
     double y_pre_frame=0;
+    kir_state getState(){return state;}
+
+    int hp=3,life=3;
+    const int max_hp=3;
 
 private:
+
 
     double spaw_x,spaw_y;
     bool isCollision();
     bool isDoor();
     bool isEnemy(Enemy** output_item=nullptr);
-    int hp=5,life=3;
 
     void Animation();
 
@@ -97,15 +107,11 @@ private:
         move_inhale,
         move_hurt
     };
-    enum state{
-        state_air,
-        state_full, state_fire,
-        state_spark, state_normal
-    };
+
 
     const double kirby_fullheight=180;
     bool isAir=0;//if kirby is inflat
-    state state = state_normal;
+    kir_state state = state_normal;
     move move = move_stop;
 
     const double jump_speed = -20;
