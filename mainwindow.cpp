@@ -191,7 +191,7 @@ void MainWindow::switchScene(){
         loadTiledMap(":/scene_1.json");
         player->setY(player->y()-60);
         kirby_init();
-     player->setX(4800);
+    // player->setX(4800);
         setBG(":/Image/background/Background.jpg");
         break;
     case scene_2:
@@ -200,7 +200,7 @@ void MainWindow::switchScene(){
         Scene->setSceneRect(0,0,8100,1080);
         Item_Default();
         loadTiledMap(":/scene_2.json");
-       player->setX(5000);
+     //  player->setX(5000);
        kirby_init();
         setBG(":/Image/background/Background.jpg");
         break;
@@ -208,7 +208,6 @@ void MainWindow::switchScene(){
        // std::cout<<"pp";
         Scene->clear();
         Scene->setSceneRect(0,0,1620,1080);
-        Item_Default();
         setBG(":/Image/background/Clear.png");
         break;
     case scene_over:
@@ -406,6 +405,12 @@ void MainWindow::kirby_status(){
         }else hearts[i]->setPixmap(QPixmap(":/Image/item/HP_0.png"));
     }
 
+    if(player->life==2){
+        lives_Label->setPixmap(QPixmap(":/Image/item/lives_02.png"));
+    }else if(player->life==1){
+        lives_Label->setPixmap(QPixmap(":/Image/item/lives_01.png"));
+    }else lives_Label->setPixmap(QPixmap(":/Image/item/lives_00.png"));
+
     if(player->getState()==state_spark){
         state_Label->show();
         state_Label->setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_board.png").scaled(state_img_width,state_img_height));
@@ -425,26 +430,26 @@ void MainWindow::kirby_init(){
     for (int i = 0; i < player->max_hp; ++i) {
             QLabel* heart = new QLabel(this);
             heart->hide();
-            heart->setGeometry(startX +500+ i * 60, startY, 50, 100);
+            heart->setGeometry(startX +900+ i * 60, startY, 50, 100);
             heart->setScaledContents(true);
             hearts.append(heart);
         }
 
-        // 順便初始化命數和能力狀態的文字位置
+
         lives_Label = new QLabel(this);
         lives_Label->hide();
-        lives_Label->setGeometry(startX+500, startY, 100, 50);
+        lives_Label->setGeometry(startX+100, startY, 100, 50);
         lives_Label->setStyleSheet("color: white; font-size: 18px; font-weight: bold;");
 
         lives = new QLabel(this);
         lives->hide();
-        lives->setGeometry(startX-100+400, startY+50,50,50);
+        lives->setGeometry(startX-100+900, startY+110,50,50);
         lives->setScaledContents(true);
 
 
         state_Label = new QLabel(this);
         state_Label->hide();
-        state_Label->setGeometry(startX-200, startY-150, state_img_width, state_img_height);
+        state_Label->setGeometry(50, 880, state_img_width, state_img_height);
 }
 
 

@@ -2,11 +2,11 @@
 #define KIRBY_H
 
 #include "gameobject.h"
-#include "enemy.h"
+//#include "enemy.h"
 #include "projectile.h"
 #include <QKeyEvent>
 #include <cmath>
-//Special class of gameObject: player
+class Enemy;
 
 enum kir_state{
     state_air,
@@ -29,7 +29,7 @@ public:
     double y_pre_frame=0;
     kir_state getState(){return state;}
 
-    int hp=3,life=3;
+    int hp=3,life=2;
     const int max_hp=3;
 
 private:

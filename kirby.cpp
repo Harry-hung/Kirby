@@ -4,7 +4,7 @@ Kirby::Kirby(QString path, QGraphicsScene *Scene,double spw_x, double spw_y):Gam
 {
     setZValue(3);
     setData(0,"Player");
-    state =state_normal;
+    state =state_fire;
     move = move_ground;
     facing=right;
     scene = Scene;
@@ -508,11 +508,21 @@ void Kirby::moveInhale()
     QRectF inhaleZone;
     if (facing == right)
     {
-        inhaleZone = QRectF(x() + 122, y(), 300, pixmap().height());
+        inhaleZone = QRectF(x() + 122, y()-50, 300, pixmap().height());
 
     } else {
-        inhaleZone = QRectF(x() - 300, y(), 300, pixmap().height());
+        inhaleZone = QRectF(x() - 300, y()-50, 300, pixmap().height());
     }
+/*              if (!debugFireRect) {
+                        // 如果方框還沒被建立，就建立一個紅色的空心方框 (線條粗細為 2)
+                        QPen redPen(Qt::red, 2);
+                        debugFireRect = scene->addRect(inhaleZone, redPen);
+                        debugFireRect->setZValue(10); // 確保這個除錯框會蓋在角色和地圖最上層
+                    } else {
+                        // 如果方框已經存在，就更新它的位置與大小，並確保它是顯示狀態
+                        debugFireRect->setRect(inhaleZone);
+                        debugFireRect->setVisible(true);}
+*/
 
     QList<QGraphicsItem*> items_in_zone = scene->items(inhaleZone);
         for(QGraphicsItem* item : items_in_zone) {
@@ -545,6 +555,26 @@ void Kirby::moveInhale()
                 }
             }
         }
+
+    //enemy hit
+    QRectF hitbox;
+    if (facing == right)
+    {
+        hitbox = QRectF(x()+60, y()+20, 70, 70);
+    } else {
+        hitbox= QRectF(x()+60, y()+20, 70, 70);
+    }
+ /*   if (!debugFireRect) {
+                            // 如果方框還沒被建立，就建立一個紅色的空心方框 (線條粗細為 2)
+                            QPen redPen(Qt::red, 2);
+                            debugFireRect = scene->addRect(hitbox, redPen);
+                            debugFireRect->setZValue(10); // 確保這個除錯框會蓋在角色和地圖最上層
+                        } else {
+                            // 如果方框已經存在，就更新它的位置與大小，並確保它是顯示狀態
+                            debugFireRect->setRect(hitbox);
+                            debugFireRect->setVisible(true);}
+    */
+    handelEnemyinHitbox(hitbox);
 
     //animation
         const double offset_y=-50;
