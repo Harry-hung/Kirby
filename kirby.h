@@ -49,6 +49,9 @@ private:
     void moveStop();
     void moveHurt();
     void moveInhale();
+    void moveRespawn();
+
+    void get_item();
 
     void moveAttack();
     void spark_attk();

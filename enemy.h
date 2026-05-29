@@ -25,6 +25,7 @@ public:
     void setDead(bool dead);
     void instantDead();
     void moveDead();
+    QPainterPath shape() const override;
 private:
     double spaw_x, spaw_y;
     int turning_x, turning_y;

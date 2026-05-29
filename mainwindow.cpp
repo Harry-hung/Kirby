@@ -7,6 +7,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     setScene();
+    player=nullptr;
     ui->setupUi(this);
     gameTimer = new QTimer(this);
     exit_button = new Buttons(":/Image/exitwindowbutton.png",Scene);
@@ -16,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(gameTimer, &QTimer::timeout, this, &MainWindow::gameUpdate);
     gameTimer ->start(16);
 
+
 }
 
 MainWindow::~MainWindow()
@@ -24,11 +26,17 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::gameUpdate(){
-    if(game_scene != scene_start&&game_scene!=scene_clear){
+    if(game_scene != scene_start&&game_scene!=scene_clear&&game_scene!=scene_over){
         //player movement
         if(player){
-            kirby_status();
+
+            if(player->life<0) {
+                game_scene=scene_over;
+                switchScene();
+                return;
+            }
             player ->updateMovement(4);
+            kirby_status();
             QPointF playerPos_onScene = player->mapToScene(0,0);
             view->centerOn(playerPos_onScene.x()+50,540);
 
@@ -49,13 +57,21 @@ void MainWindow::gameUpdate(){
                 else if(game_scene==scene_2)game_scene = scene_clear;
 
                 switchScene();
+                return;
             }
 
         }else qDebug()<<"Failed to load Kirby";
+        //projectile
+        projUpdate();
+
+        //Enemy
+        if(!enemys.isEmpty())
+        for(Enemy* enemy:enemys)
+            enemy->update();
+    }else if(game_scene==scene_over){
+        sceneOver();
     }
 
-    //projectile
-    projUpdate();
 
     //button
     if(exit_button){
@@ -63,10 +79,6 @@ void MainWindow::gameUpdate(){
         exit_button ->setPos(view->mapToScene(1610,0).x() - exit_button->pixmap().width(),0);
     }
 
-    //Enemy
-    if(!enemys.isEmpty())
-    for(Enemy* enemy:enemys)
-        enemy->update();
 }
 
 //set background
@@ -74,6 +86,7 @@ void MainWindow::setBG(QString path){
 
     QPixmap Bg1(path);
     QPixmap scaledBg1;
+
         if(game_scene==scene_start)
             scaledBg1 = Bg1.scaled(1620,1080,Qt::IgnoreAspectRatio);
         else if(game_scene == scene_1)
@@ -84,11 +97,12 @@ void MainWindow::setBG(QString path){
             scaledBg1 = Bg1.scaled(1620,1080,Qt::KeepAspectRatio);
         else if(game_scene==scene_over)
             scaledBg1 = Bg1.scaled(1620,1080,Qt::KeepAspectRatio);
-        QGraphicsPixmapItem *bg1Item = new QGraphicsPixmapItem(scaledBg1);
-        bg1Item ->setPos(0,0);
-        bg1Item ->setZValue(-1);
-
-        Scene->addItem(bg1Item);
+        if(bg1Item==nullptr){
+            bg1Item = new QGraphicsPixmapItem(scaledBg1);
+            bg1Item ->setPos(0,0);
+            bg1Item ->setZValue(-1);
+            Scene->addItem(bg1Item);
+        }else bg1Item ->setPixmap(scaledBg1);
 
 
 /*
@@ -168,14 +182,53 @@ void MainWindow::keyPressEvent(QKeyEvent *event){
         game_scene = scene_1;
         switchScene();
     }
+
+    if(game_scene == scene_over&&!iscontinue&&event->key()==Qt::Key_Return) QApplication::quit();
+    if(game_scene == scene_clear&&event->key() == Qt::Key_Return) QApplication::quit();
+    if(game_scene == scene_over && iscontinue && event->key()==Qt::Key_Return)
+        {
+        game_scene = scene_start;
+        switchScene();
+    }
+    if(event->key()==Qt::Key_Up)isUpKeyPressed=1;
+    if(event->key()==Qt::Key_Down)isDownKeyPressed=1;
+
     return;
 }
 
 void MainWindow::keyReleaseEvent(QKeyEvent *event){
     if(player)
         player -> handleReleaseEvent(event);
+    if(event->isAutoRepeat())
+        return;
+    if(event->key()==Qt::Key_Up)isUpKeyPressed=0;
+    if(event->key()==Qt::Key_Down)isDownKeyPressed=0;
+
 
     return;
+}
+
+void MainWindow::sceneOver(){
+    state_Label->hide();
+    lives->hide();
+    lives_Label->hide();
+    for(QLabel* heart:hearts)
+        heart->hide();
+    if(isUpKeyPressed&&!iscontinue&&isUpKeyReleased){
+        iscontinue=1;
+        isUpKeyReleased=0;
+        setBG(":/Image/background/game_over_continue.png");
+    }else if(isDownKeyPressed&&iscontinue&&isDownKeyReleased){
+        iscontinue=0;
+        isDownKeyReleased=0;
+        setBG(":/Image/background/game_over_quit.png");
+    }
+    if(!isUpKeyPressed){
+        isUpKeyReleased=1;
+    }
+    if(!isDownKeyPressed){
+        isDownKeyReleased=1;
+    }
 }
 
 void MainWindow::switchScene(){
@@ -191,7 +244,7 @@ void MainWindow::switchScene(){
         loadTiledMap(":/scene_1.json");
         player->setY(player->y()-60);
         kirby_init();
-    // player->setX(4800);
+   //  player->setX(4800);
         setBG(":/Image/background/Background.jpg");
         break;
     case scene_2:
@@ -200,8 +253,8 @@ void MainWindow::switchScene(){
         Scene->setSceneRect(0,0,8100,1080);
         Item_Default();
         loadTiledMap(":/scene_2.json");
-     //  player->setX(5000);
-       kirby_init();
+      // player->setX(5000);
+        kirby_init();
         setBG(":/Image/background/Background.jpg");
         break;
     case scene_clear:
@@ -214,6 +267,7 @@ void MainWindow::switchScene(){
         Scene->clear();
         Scene->setSceneRect(0,0,1620,1080);
         Item_Default();
+        sceneOver();
         setBG(":/Image/background/game_over_continue.png");
         break;
     }
@@ -222,6 +276,7 @@ void MainWindow::switchScene(){
 void MainWindow::Item_Default(){
     player =nullptr;
     exit_button = nullptr;
+    bg1Item = nullptr;
     enemys.clear();
     if(!exit_button)
         exit_button = new Buttons(":/Image/exitwindowbutton.png",Scene);
@@ -357,7 +412,8 @@ void MainWindow::loadTiledMap(QString json_path){
                     player->setPos(x,y);
 //std::cout<<"Player: "<<player->x()<<' '<<player->y();
                     player->y_pre_frame=static_cast<int>(y);
-                }else if(objects[j].toObject()["name"] == "EnemySpawn"){
+                }
+                if(objects[j].toObject()["name"] == "EnemySpawn"){
 
                    double x= objects[j].toObject()["x"].toDouble();
                    double y= objects[j].toObject()["y"].toDouble();
@@ -369,6 +425,24 @@ void MainWindow::loadTiledMap(QString json_path){
                    enemys.append(enemy);
                    Scene->addItem(enemy);
                    enemy->setPos(x,y);
+                }
+                if(objects[j].toObject()["name"] == "MaxTomato"){
+                    double x= objects[j].toObject()["x"].toDouble();
+                    double y= objects[j].toObject()["y"].toDouble();
+                    QGraphicsPixmapItem* tomato = nullptr;
+                    tomato=new QGraphicsPixmapItem(QPixmap(":/Image/item/Maxim Tomato.png"));
+                    tomato->setData(0,"MaxTomato");
+                    tomato->setPos(x-50,y-40);
+                    Scene->addItem(tomato);
+                }
+                if(objects[j].toObject()["name"] == "life"){
+                    double x= objects[j].toObject()["x"].toDouble();
+                    double y= objects[j].toObject()["y"].toDouble();
+                    QGraphicsPixmapItem* life = nullptr;
+                    life=new QGraphicsPixmapItem(QPixmap(":/Image/item/1UP.png"));
+                    life->setData(0,"life");
+                    life->setPos(x-50,y-35);
+                    Scene->addItem(life);
                 }
             }
 
@@ -394,22 +468,27 @@ void MainWindow::projUpdate()
 void MainWindow::kirby_status(){
 
     lives_Label->show();
-
     lives->setPixmap(QPixmap(":/Image/item/life.png"));
     lives->show();
     for(int i=0;i<player->max_hp;i++)
     {
         hearts[i]->show();
+
         if(i<player->hp){
             hearts[i]->setPixmap(QPixmap(":/Image/item/HP_1.png"));
         }else hearts[i]->setPixmap(QPixmap(":/Image/item/HP_0.png"));
     }
 
+    lives_Label->clear();
+    lives_Label->hide();
     if(player->life==2){
         lives_Label->setPixmap(QPixmap(":/Image/item/lives_02.png"));
     }else if(player->life==1){
         lives_Label->setPixmap(QPixmap(":/Image/item/lives_01.png"));
+    }else if(player->life==3){
+        lives_Label->setPixmap(QPixmap(":/Image/item/lives_03.png"));
     }else lives_Label->setPixmap(QPixmap(":/Image/item/lives_00.png"));
+    lives_Label->show();
 
     if(player->getState()==state_spark){
         state_Label->show();
@@ -420,12 +499,18 @@ void MainWindow::kirby_status(){
     }else {
         state_Label->hide();
     }
+
 }
 
 void MainWindow::kirby_init(){
+
     double startX =500;
     double startY = 900;
 
+    for (QLabel* heart : hearts) {
+            if (heart) delete heart;
+        }
+        hearts.clear();
 
     for (int i = 0; i < player->max_hp; ++i) {
             QLabel* heart = new QLabel(this);
@@ -435,28 +520,24 @@ void MainWindow::kirby_init(){
             hearts.append(heart);
         }
 
-
-        lives_Label = new QLabel(this);
+        //num of lives
+        if(lives_Label==nullptr)
+            lives_Label = new QLabel(this);
         lives_Label->hide();
-        lives_Label->setGeometry(startX+100, startY, 100, 50);
+        lives_Label->setGeometry(startX+950, startY+110, 100, 50);
         lives_Label->setStyleSheet("color: white; font-size: 18px; font-weight: bold;");
 
-        lives = new QLabel(this);
+        if(lives==nullptr)
+            lives = new QLabel(this);
         lives->hide();
-        lives->setGeometry(startX-100+900, startY+110,50,50);
+        lives->setGeometry(startX+900, startY+110,50,50);
         lives->setScaledContents(true);
 
+        if(state_Label==nullptr)
+            state_Label = new QLabel(this);
 
-        state_Label = new QLabel(this);
         state_Label->hide();
+
         state_Label->setGeometry(50, 880, state_img_width, state_img_height);
-}
 
-
-
-
-
-
-
-
-
+  }

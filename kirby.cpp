@@ -9,6 +9,7 @@ Kirby::Kirby(QString path, QGraphicsScene *Scene,double spw_x, double spw_y):Gam
     facing=right;
     scene = Scene;
     spaw_x=spw_x; spaw_y=spw_y;
+    hp=3; life=3;
 }
 
 void Kirby::updateMovement(int speed){
@@ -37,6 +38,8 @@ void Kirby::updateMovement(int speed){
 
     }*/
 
+
+
     //abandon ability
     if(isVPressed){
         if(isVrelease&&(state==state_fire||state==state_spark))
@@ -48,11 +51,21 @@ void Kirby::updateMovement(int speed){
 
     temp_x = x();
 
+    //fall in hole
+    if(y()>1680){
+        hp=0;
+        moveRespawn();
+    }
+
     if(isYWeird()){
         setY(y_pre_frame);
         return;
     }
+
+
+
     y_pre_frame=y();
+
 
 
 //attack & inhale
@@ -94,7 +107,8 @@ void Kirby::updateMovement(int speed){
         return;
     }
     setOffset(0,0);
-
+//get item
+    get_item();
 
 //enemy collision
     if(move!=move_attacking&&hurt_frames==120&&isEnemy())
@@ -492,12 +506,24 @@ void Kirby::moveStop(){
 
 void Kirby::moveHurt()
 {
+    if(hp<=0){
+        moveRespawn();
+    }
     if ((hurt_frames / 4) % 2 == 0) {
         setOpacity(0.5f);
     } else {
         setOpacity(1.0f);
     }
     hurt_frames++;
+}
+
+void Kirby::moveRespawn(){
+    vx=0;
+    setPos(spaw_x,spaw_y);
+    life--;
+     y_pre_frame=y();
+    if(life>=0)
+        hp=3;
 }
 
 void Kirby::moveInhale()
@@ -678,35 +704,36 @@ void Kirby::moveAttack(){
         {
             fire_attk();
             double fire_height=250;
+            int frame_interval = 8;
             QRectF kirbyHitbox;
             switch (facing){
             case left:
                     setOffset(-250,-50);
-                    if(Attk_frames<image_frame){
+                    if((Attk_frames/frame_interval)%3==0){
                         Attk_frames++;
                         setPixmap(QPixmap(":/Image/Kirby_fire/kirby_fire_attk(2)_L.png").scaledToHeight(fire_height));
-                    }else if(Attk_frames<image_frame*2){
+                    }else if((Attk_frames/frame_interval)%3==1){
                         setPixmap(QPixmap(":/Image/Kirby_fire/kirby_fire_attack_L.png").scaledToHeight(fire_height));
                         Attk_frames++;
-                    }else if(Attk_frames<image_frame*3){
+                    }else if((Attk_frames/frame_interval)%3==2){
                         setPixmap(QPixmap(":/Image/Kirby_fire/kirby_fire_attk(3)_L.png").scaledToHeight(fire_height));
-                        Attk_frames++;
-                    }else{ Attk_frames=0;}
+                        Attk_frames=0;
+                    }
                     kirbyHitbox=QRectF(x()+100,y()+50,75,75);
                         break;
             case right:
                 kirbyHitbox=QRectF(x()+90,y()+50,75,75);
                     setOffset(0,-50);
-                    if(Attk_frames<image_frame){
+                    if((Attk_frames/frame_interval)%3==0){
                         setPixmap(QPixmap(":/Image/Kirby_fire/kirby_fire_attk(2)_R.png").scaledToHeight(fire_height));
                         Attk_frames++;
-                    }else if(Attk_frames<image_frame*2){
+                    }else if((Attk_frames/frame_interval)%3==1){
                         Attk_frames++;
                         setPixmap(QPixmap(":/Image/Kirby_fire/kirby_fire_attack_R.png").scaledToHeight(fire_height));
-                    }else if(Attk_frames<image_frame*3){
-                        Attk_frames++;
+                    }else if((Attk_frames/frame_interval)%3==2){
                         setPixmap(QPixmap(":/Image/Kirby_fire/kirby_fire_attk(3)_R.png").scaledToHeight(fire_height));
-                    }else Attk_frames=0;
+                        Attk_frames=0;
+                    }
                         break;
 
             }
@@ -1066,6 +1093,20 @@ void Kirby::handelEnemyinHitbox(QRectF box){
     return;
 }
 
-
+void Kirby::get_item(){
+    QList<QGraphicsItem*> items=scene->collidingItems(this);
+    for(QGraphicsItem* item:items){
+        if(item->data(0)=="MaxTomato")
+        {
+            item->setVisible(false);
+            hp=3;
+        }
+        if(item->data(0)=="life")
+        {
+            life++;
+            item->setVisible(false);
+        }
+    }
+}
 
 

@@ -62,6 +62,8 @@ public:
     void kirby_status();
     void kirby_init();
 
+    void sceneOver();
+
 private slots:
     void gameUpdate();
 
@@ -74,6 +76,7 @@ private:
     const double state_img_height=150;
     const double state_img_width =112.5;
 
+    QGraphicsPixmapItem* bg1Item=nullptr;
     QGraphicsView *view;
     Ui::MainWindow *ui;
     QGraphicsScene *Scene;
@@ -82,6 +85,11 @@ private:
     Buttons *exit_button;
     QList<Enemy*> enemys;
 
+    bool isDownKeyPressed=0;
+    bool isUpKeyPressed=0;
+    bool isDownKeyReleased=1;
+    bool isUpKeyReleased=1;
+    bool iscontinue=1;
 
     //scene 1,2,3
     const static int scene_start =0,

@@ -7,7 +7,7 @@ Enemy::Enemy(QString img_path, QGraphicsScene* main_scene
 
              ):GameObject(img_path,main_scene)
 {
-
+    setZValue(3);
     id=scene_id;
     scene = main_scene;
     spaw_x = spawnPoint_x; spaw_y = spawnPoint_y;
@@ -54,6 +54,25 @@ Enemy::Enemy(QString img_path, QGraphicsScene* main_scene
     }
 
 
+}
+
+QPainterPath Enemy::shape() const
+{
+    QPainterPath path;
+    switch(type){
+    case Hot_Head:
+        path.addRect(50,50,60,60);
+        return path;
+    break;
+    case Waddle_Dee:
+        path.addRect(20,20,80,60);
+        return path;
+    break;
+    case Gordo:
+    default:
+        return GameObject::shape();
+        break;
+    }
 }
 QList<int> Enemy::types={-1};
 
@@ -569,7 +588,7 @@ void Enemy::Attk()
                     setPixmap(QPixmap((facing==left)?":/Image/Hot_Head/Hot_head_attack_L.png":":/Image/Hot_Head/Hot_head_attack_R.png"));
                     int dx=0;
                     dx=(facing==right)?50:-10;
-                    scene->addItem(new Projectile(scene,x()+dx,y()+50,"Player",facing,"Fireball"));
+                    scene->addItem(new Projectile(scene,x()+dx,y()+20,"Player",facing,"Fireball"));
                 }else if(frame>img_frame){
                     attk_timer=0;frame=0;isAttacking=0;
                 }
