@@ -59,8 +59,11 @@ public:
 
     void projUpdate();
 
+    int getGameScene() const{return game_scene;}
+
     void kirby_status();
     void kirby_init();
+    int kirby_lives=3;
 
     void sceneOver();
 

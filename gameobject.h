@@ -19,7 +19,7 @@ class GameObject : public QGraphicsPixmapItem
 public:
     GameObject(QString path="", QGraphicsScene *scene=nullptr);
 
-    void paint(QPainter* painter,const QStyleOptionGraphicsItem *option, QWidget *widget) override;
+   // void paint(QPainter* painter,const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
 private:
 

@@ -667,14 +667,25 @@ void Enemy::moveDead()
     }else if(dead_frame<90)
         setOpacity(1.0f);
     else{
+
         setVisible(false);
         isdying=0;
+    }
+    if(fire!=nullptr){
+        scene->removeItem(fire);
+        delete fire;
+        fire=nullptr;
     }
 
 }
 
 void Enemy::instantDead()
 {
+    if(fire!=nullptr){
+        scene->removeItem(fire);
+        delete fire;
+        fire=nullptr;
+    }
     isdead=1;
     setVisible(0);
     setData(0,"DeadEnemy");

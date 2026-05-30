@@ -18,6 +18,7 @@ QPainterPath Projectile::shape() const
 {
     QPainterPath path;
     if(type=="Fireball") path.addRect(10,10, pixmap().width()-20, pixmap().height()-20);
+    else if(type=="Star") path.addRect(23,23, pixmap().width()-46, pixmap().height()-46);
     else path.addRect(15,15, pixmap().width()-30, pixmap().height()-30);
 
     return path;

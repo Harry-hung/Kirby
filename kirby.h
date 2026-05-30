@@ -7,6 +7,7 @@
 #include <QKeyEvent>
 #include <cmath>
 class Enemy;
+class MainWindow;
 
 enum kir_state{
     state_air,
@@ -17,7 +18,7 @@ enum kir_state{
 class Kirby : public GameObject
 {
 public:
-    Kirby(QString img_path, QGraphicsScene *scene,double spw_x, double spw_y);
+    Kirby(QString img_path, QGraphicsScene *scene,double spw_x, double spw_y, int lives=2);
 
     void handleCollisionX();
     void handleCollisionY();
@@ -29,7 +30,7 @@ public:
     double y_pre_frame=0;
     kir_state getState(){return state;}
 
-    int hp=3,life=2;
+    int hp=3,life=3;
     const int max_hp=3;
 
 private:

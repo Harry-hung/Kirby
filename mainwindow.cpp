@@ -29,8 +29,7 @@ void MainWindow::gameUpdate(){
     if(game_scene != scene_start&&game_scene!=scene_clear&&game_scene!=scene_over){
         //player movement
         if(player){
-
-            if(player->life<0) {
+            if(player->life==0) {
                 game_scene=scene_over;
                 switchScene();
                 return;
@@ -44,7 +43,7 @@ void MainWindow::gameUpdate(){
             for(Enemy* enemy : enemys){
                 if(enemy->isDead()){
                     double d_kirby=qAbs(enemy->x()-player->x());
-                    if(d_kirby>1300)
+                    if(d_kirby>1500)
                     {
                         enemy->respawn();
                     }
@@ -248,12 +247,14 @@ void MainWindow::switchScene(){
         setBG(":/Image/background/Background.jpg");
         break;
     case scene_2:
+        kirby_lives=player->life;
+       // qDebug()<<kirby_lives;
         srand(time(NULL));
         Scene->clear();
         Scene->setSceneRect(0,0,8100,1080);
         Item_Default();
         loadTiledMap(":/scene_2.json");
-      // player->setX(5000);
+      // player->setX(7500);
         kirby_init();
         setBG(":/Image/background/Background.jpg");
         break;
@@ -261,6 +262,8 @@ void MainWindow::switchScene(){
        // std::cout<<"pp";
         Scene->clear();
         Scene->setSceneRect(0,0,1620,1080);
+        Item_Default();
+        kirby_init();
         setBG(":/Image/background/Clear.png");
         break;
     case scene_over:
@@ -405,7 +408,7 @@ void MainWindow::loadTiledMap(QString json_path){
                     double x = objects[j].toObject()["x"].toDouble();
                     double y = objects[j].toObject()["y"].toDouble();
                     if(!player){
-                        player = new Kirby(":/Image/Kirby_normal/kirby_stop_R.png",Scene, x, y);
+                        player = new Kirby(":/Image/Kirby_normal/kirby_stop_R.png",Scene, x, y,kirby_lives);
                         Scene ->addItem(player);
                     }
                     y=y-37;
@@ -481,11 +484,11 @@ void MainWindow::kirby_status(){
 
     lives_Label->clear();
     lives_Label->hide();
-    if(player->life==2){
+    if(player->life==3){
         lives_Label->setPixmap(QPixmap(":/Image/item/lives_02.png"));
-    }else if(player->life==1){
+    }else if(player->life==2){
         lives_Label->setPixmap(QPixmap(":/Image/item/lives_01.png"));
-    }else if(player->life==3){
+    }else if(player->life==4){
         lives_Label->setPixmap(QPixmap(":/Image/item/lives_03.png"));
     }else lives_Label->setPixmap(QPixmap(":/Image/item/lives_00.png"));
     lives_Label->show();
@@ -512,7 +515,7 @@ void MainWindow::kirby_init(){
         }
         hearts.clear();
 
-    for (int i = 0; i < player->max_hp; ++i) {
+    for (int i = 0; i < 3; ++i) {
             QLabel* heart = new QLabel(this);
             heart->hide();
             heart->setGeometry(startX +900+ i * 60, startY, 50, 100);

@@ -1,15 +1,18 @@
 #include "kirby.h"
+#include "mainwindow.h"
 #include<iostream>
-Kirby::Kirby(QString path, QGraphicsScene *Scene,double spw_x, double spw_y):GameObject(path, Scene)
+
+Kirby::Kirby(QString path, QGraphicsScene *Scene,double spw_x, double spw_y,int lives):GameObject(path, Scene)
 {
     setZValue(3);
     setData(0,"Player");
-    state =state_fire;
+    state =state_spark;
     move = move_ground;
     facing=right;
     scene = Scene;
     spaw_x=spw_x; spaw_y=spw_y;
-    hp=3; life=3;
+    hp=3;
+    life=lives;
 }
 
 void Kirby::updateMovement(int speed){
@@ -45,7 +48,10 @@ void Kirby::updateMovement(int speed){
         if(isVrelease&&(state==state_fire||state==state_spark))
         {
             isVrelease=0;
-            state=state_normal;
+            setOffset(0,0);
+            if(!isAir)
+                state=state_normal;
+            else state=state_air;
         }
     }else isVrelease =1;
 
@@ -114,7 +120,6 @@ void Kirby::updateMovement(int speed){
     if(move!=move_attacking&&hurt_frames==120&&isEnemy())
     {
         handelCollideEnemy();
-
     }
 
 //hurt animation
@@ -122,12 +127,18 @@ void Kirby::updateMovement(int speed){
     {
         moveHurt();
     }
+
+    if(hp<=0){
+        moveRespawn();
+        return;
+    }
     if(hurt_frames<15)
     {//knockback within the 0.25s after collide with enemy
      //here only calculate the x, the gravity is dealing the y
         setX(x()+vx);
         if(facing==left) vx+=friction;
         else vx-=friction;
+
     }else vx=0;
 
 //x direction
@@ -388,7 +399,7 @@ void Kirby::moveUp(){
 
                     setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_fly(1)_R.png"));
                 }
-                else if(state_spark){
+                else if(state==state_spark){
 
                     setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_fly(1)_R.png"));
                 }
@@ -399,7 +410,7 @@ void Kirby::moveUp(){
                 else if(state==state_fire){
 
                     setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_fly(2)_R.png"));
-                }else if(state_spark){
+                }else if(state==state_spark){
 
                     setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_fly(2)_R.png"));
                 }
@@ -414,7 +425,7 @@ void Kirby::moveUp(){
                 else if(state==state_fire){
 
                     setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_fly(1)_L.png"));
-                }else if(state_spark){
+                }else if(state==state_spark){
 
                     setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_fly(1)_L.png"));
                 }
@@ -425,7 +436,7 @@ void Kirby::moveUp(){
                 else if(state==state_fire){
 
                     setPixmap(QPixmap(":/Image/Kirby_fire/kirbyfire_fly(2)_L.png"));
-                }else if(state_spark){
+                }else if(state==state_spark){
 
                     setPixmap(QPixmap(":/Image/Kirby_spark/Kirby_spark_fly(2)_L.png"));
                 }
@@ -502,13 +513,12 @@ void Kirby::moveStop(){
     }else if(state==state_spark&&!isAir){
         setPixmap(QPixmap((facing==right)?":/Image/Kirby_spark/Kirby_spark_stop_R.png":":/Image/Kirby_spark/Kirby_spark_stop_L.png").scaledToHeight(173));
     }
+
 }
 
 void Kirby::moveHurt()
 {
-    if(hp<=0){
-        moveRespawn();
-    }
+
     if ((hurt_frames / 4) % 2 == 0) {
         setOpacity(0.5f);
     } else {
@@ -519,7 +529,13 @@ void Kirby::moveHurt()
 
 void Kirby::moveRespawn(){
     vx=0;
+    facing=right;
+    hurt_frames=15;
+    state=state_normal;
+    setPixmap(QPixmap(":/Image/Kirby_normal/kirby_stop_R.png"));
+    isAir=0;
     setPos(spaw_x,spaw_y);
+    //qDebug()<<spaw_x<<' '<<spaw_y;
     life--;
      y_pre_frame=y();
     if(life>=0)
@@ -1070,11 +1086,7 @@ void Kirby::handelEnemyinHitbox(QRectF box){
             state=state_normal;
             isAir=0;
             hurt_frames=0;
-            if(item->data(1)=="halable")
-            {
-                Enemy* ene = dynamic_cast<Enemy*>(item);
-                ene->setDead(true);
-            }
+
 
             if(item->x() > x())
             {

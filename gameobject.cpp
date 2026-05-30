@@ -15,7 +15,7 @@ GameObject::GameObject(QString img_path, QGraphicsScene *scene)
 //}
 
 
-
+/*
 void GameObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget){
     QGraphicsPixmapItem::paint(painter, option, widget);
 
@@ -29,5 +29,5 @@ void GameObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *option
             painter->drawPath(shape());
 
 }
-
+*/
 
